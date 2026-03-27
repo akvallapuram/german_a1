@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>German Flashcards A–F | Goethe A1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f4f0; min-height: 100vh; padding: 2rem 1rem; color: #1a1a1a; }
+  h1 { text-align: center; font-size: 1.1rem; font-weight: 500; color: #555; margin-bottom: 0.25rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .subtitle { text-align: center; font-size: 0.8rem; color: #999; margin-bottom: 2rem; }
+  .progress-bg { height: 4px; background: #ddd; border-radius: 2px; max-width: 540px; margin: 0 auto 1.5rem; }
+  .progress-fill { height: 4px; background: #7F77DD; border-radius: 2px; transition: width 0.3s; }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; max-width: 540px; margin: 0 auto 0.75rem; }
+  .counter { font-size: 13px; color: #777; }
+  .shuffle-btn { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 5px 14px; font-size: 13px; color: #555; cursor: pointer; transition: background 0.15s; }
+  .shuffle-btn:hover { background: #f0efeb; }
+  .card-area { perspective: 1000px; width: 100%; max-width: 540px; margin: 0 auto 1.25rem; cursor: pointer; }
+  .card-inner { position: relative; width: 100%; height: 210px; transform-style: preserve-3d; transition: transform 0.45s; }
+  .card-inner.flipped { transform: rotateY(180deg); }
+  .card-face { position: absolute; inset: 0; backface-visibility: hidden; border: 1px solid #e0dfd9; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #fff; }
+  .card-back { transform: rotateY(180deg); background: #f9f8f4; }
+  .card-hint { font-size: 11px; color: #aaa; margin-bottom: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card-word { font-size: 26px; font-weight: 500; color: #1a1a1a; text-align: center; }
+  .card-example { font-size: 13px; color: #888; margin-top: 10px; text-align: center; font-style: italic; max-width: 340px; line-height: 1.5; }
+  .controls { display: flex; gap: 10px; justify-content: center; max-width: 540px; margin: 0 auto 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .controls.visible { opacity: 1; pointer-events: auto; }
+  .btn { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+  .btn:active { transform: scale(0.97); }
+  .btn-wrong { color: #c0442a; border-color: #e8c4ba; }
+  .btn-wrong:hover { background: #fdf1ee; }
+  .btn-right { color: #1a8060; border-color: #b0d9ca; }
+  .btn-right:hover { background: #edf7f3; }
+  .meta { display: flex; justify-content: space-between; max-width: 540px; margin: 0 auto; font-size: 13px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-know { background: #e1f5ee; color: #0f6e56; }
+  .badge-learn { background: #faeae7; color: #993c1d; }
+  .summary { text-align: center; padding: 2rem 1rem; display: none; }
+  .summary-icon { font-size: 48px; margin-bottom: 1rem; }
+  .summary h2 { font-size: 20px; font-weight: 500; margin-bottom: 0.5rem; }
+  .summary p { color: #777; font-size: 14px; }
+  .restart-btn { margin-top: 1.5rem; padding: 10px 28px; border: 1px solid #ddd; border-radius: 10px; background: #fff; cursor: pointer; font-size: 14px; color: #1a1a1a; }
+  .restart-btn:hover { background: #f0efeb; }
+</style>
+</head>
+<body>
+
+<h1>Goethe A1 — Wortliste</h1>
+<p class="subtitle">German Flashcards A–F &nbsp;·&nbsp; 120 cards</p>
+
+<div class="top-bar">
+  <span class="counter" id="counter">Card 1 of 120</span>
+  <button class="shuffle-btn" onclick="shuffle()">Shuffle</button>
+</div>
+<div class="progress-bg">
+  <div class="progress-fill" id="progress" style="width:0%"></div>
+</div>
+
+<div class="card-area" id="cardArea">
+  <div class="card-inner" id="cardInner" onclick="flipCard()">
+    <div class="card-face card-front">
+      <div class="card-hint">English — tap to reveal</div>
+      <div class="card-word" id="frontWord"></div>
+    </div>
+    <div class="card-face card-back">
+      <div class="card-hint">Deutsch</div>
+      <div class="card-word" id="backWord"></div>
+      <div class="card-example" id="backExample"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <button class="btn btn-wrong" onclick="mark(false)">✗ Still learning</button>
+  <button class="btn btn-right" onclick="mark(true)">✓ Got it</button>
+</div>
+
+<div class="meta">
+  <span><span class="badge badge-know" id="knowCount">0 know</span></span>
+  <span><span class="badge badge-learn" id="learnCount">0 learning</span></span>
+</div>
+
+<div class="summary" id="summary">
+  <div class="summary-icon">🎉</div>
+  <h2>Round complete!</h2>
+  <p id="summaryText"></p>
+  <button class="restart-btn" onclick="restart()">Go again</button>
+</div>
+
+<script>
+const cards = [
+  {en:"from / starting (time/place)",de:"ab",ex:"Ab morgen muss ich arbeiten."},
+  {en:"but / however",de:"aber",ex:"Ich bin oft im Büro, aber nur für wenige Stunden."},
+  {en:"to depart / to leave",de:"abfahren",ex:"Wir fahren um zwölf Uhr ab."},
+  {en:"the departure",de:"die Abfahrt",ex:"Vor der Abfahrt rufe ich an."},
+  {en:"to hand in / drop off",de:"abgeben",ex:"Ich muss meine Schlüssel abgeben."},
+  {en:"to pick up (a person/thing)",de:"abholen",ex:"Wann kann ich den Schrank bei dir abholen?"},
+  {en:"the sender (of a letter)",de:"der Absender",ex:"Da ist ein Brief für dich ohne Absender."},
+  {en:"attention / watch out",de:"Achtung",ex:"Achtung! Das dürfen Sie nicht tun."},
+  {en:"the address",de:"die Adresse",ex:"Können Sie mir seine Adresse sagen?"},
+  {en:"all / everything / everyone",de:"all-",ex:"Das ist alles. Hast du alles?"},
+  {en:"alone",de:"allein",ex:"Er kommt allein."},
+  {en:"so / well then / therefore",de:"also",ex:"Also, es ist so: ..."},
+  {en:"old / aged",de:"alt",ex:"Wie alt sind Sie?"},
+  {en:"the age",de:"das Alter",ex:"Alter: 26 Jahre."},
+  {en:"at / on / to (location/time)",de:"an",ex:"Wir treffen uns am Bahnhof."},
+  {en:"to offer",de:"anbieten",ex:"Was darf ich dir anbieten?"},
+  {en:"the offer / deal",de:"das Angebot",ex:"Heute sind Sportschuhe im Angebot."},
+  {en:"other / different",de:"ander-",ex:"Willst du diese Jacke? – Nein, ich möchte die andere."},
+  {en:"to start / to begin",de:"anfangen",ex:"Der Unterricht fängt gleich an."},
+  {en:"the beginning / start",de:"der Anfang",ex:"Wir machen Anfang Juli Urlaub."},
+  {en:"to click on",de:"anklicken",ex:"Da musst du dieses Wort anklicken."},
+  {en:"to arrive",de:"ankommen",ex:"Wann kommt dieser Zug in Hamburg an?"},
+  {en:"the arrival",de:"die Ankunft",ex:"Auf diesem Plan steht nur die Ankunft der Züge."},
+  {en:"to tick / cross a box",de:"ankreuzen",ex:"Auf dem Formular müssen Sie etwas ankreuzen."},
+  {en:"to turn on (light etc.)",de:"anmachen",ex:"Mach bitte das Licht an!"},
+  {en:"to register / sign up",de:"(sich) anmelden",ex:"Wo kann ich mich anmelden?"},
+  {en:"the registration",de:"die Anmeldung",ex:"Eine Anmeldung für diesen Kurs ist nicht möglich."},
+  {en:"the salutation / form of address",de:"die Anrede",ex:"Schreiben Sie auch eine Anrede und einen Gruß."},
+  {en:"to call / phone",de:"anrufen",ex:"Kann man Sie anrufen?"},
+  {en:"the (phone) call",de:"der Anruf",ex:"Sie bekommt viele Anrufe auf ihrem Handy."},
+  {en:"the answering machine",de:"der Anrufbeantworter",ex:"Sprechen Sie bitte auf den Anrufbeantworter."},
+  {en:"the announcement / message",de:"die Ansage",ex:"Hören Sie die Ansagen."},
+  {en:"the connection (transport/phone)",de:"der Anschluss",ex:"In Mannheim haben Sie Anschluss nach Saarbrücken."},
+  {en:"to be on (light/device)",de:"an sein",ex:"Heute Nacht war das Licht an."},
+  {en:"to answer / reply",de:"antworten",ex:"Er antwortet nicht."},
+  {en:"the answer / reply",de:"die Antwort",ex:"Er gibt leider keine Antwort."},
+  {en:"the advertisement / notice",de:"die Anzeige",ex:"Ich habe Ihre Anzeige in der Zeitung gelesen."},
+  {en:"to get dressed",de:"(sich) anziehen",ex:"Ich muss mich noch anziehen."},
+  {en:"the apartment / flat",de:"das Apartment",ex:"Wir haben ein Apartment gemietet."},
+  {en:"the apple",de:"der Apfel",ex:"Ein Pfund Äpfel bitte."},
+  {en:"appetite / enjoy your meal",de:"der Appetit",ex:"Guten Appetit!"},
+  {en:"to work",de:"arbeiten",ex:"Wo arbeiten Sie?"},
+  {en:"the work / job",de:"die Arbeit",ex:"Mein Bruder sucht Arbeit."},
+  {en:"unemployed",de:"arbeitslos",ex:"Es gibt viele Leute, die schon lange arbeitslos sind."},
+  {en:"the workplace",de:"der Arbeitsplatz",ex:"An meinem Arbeitsplatz fehlt ein Drucker."},
+  {en:"the arm",de:"der Arm",ex:"Mein Arm tut weh."},
+  {en:"the doctor / physician",de:"der Arzt",ex:"Morgen habe ich einen Termin bei meiner Ärztin."},
+  {en:"also / too / as well",de:"auch",ex:"Ich bin auch Spanier."},
+  {en:"on / at / up (position)",de:"auf",ex:"Die Kinder spielen auf der Straße."},
+  {en:"goodbye",de:"Auf Wiedersehen",ex:"Auf Wiedersehen!"},
+  {en:"the task / exercise",de:"die Aufgabe",ex:"Das ist eine schwere Aufgabe."},
+  {en:"to stop / finish",de:"aufhören",ex:"Der Kurs hört in einer Woche auf."},
+  {en:"to be open",de:"auf sein",ex:"Du brauchst den Schlüssel nicht. Die Wohnung ist auf."},
+  {en:"to get up / stand up",de:"aufstehen",ex:"Ich muss immer um vier Uhr aufstehen."},
+  {en:"the lift / elevator",de:"der Aufzug",ex:"In diesem Haus gibt es keinen Aufzug."},
+  {en:"the eye",de:"das Auge",ex:"Er hat blaue Augen."},
+  {en:"from / out of",de:"aus",ex:"Er kommt aus Brasilien."},
+  {en:"the excursion / trip",de:"der Ausflug",ex:"Morgen machen wir einen Ausflug nach Heidelberg."},
+  {en:"to fill in / fill out",de:"ausfüllen",ex:"Füllen Sie bitte dieses Formular aus."},
+  {en:"the exit",de:"der Ausgang",ex:"Wo ist der Ausgang?"},
+  {en:"the information / inquiry",de:"die Auskunft",ex:"Können Sie mir eine Auskunft geben?"},
+  {en:"abroad / foreign country",de:"das Ausland",ex:"Fahren Sie ins Ausland?"},
+  {en:"the foreigner",de:"der Ausländer",ex:"Sind Sie Ausländerin?"},
+  {en:"foreign / international",de:"ausländisch",ex:"Leider habe ich nur ausländisches Geld."},
+  {en:"to turn off (light etc.)",de:"ausmachen",ex:"Mach bitte das Licht aus!"},
+  {en:"the statement / answer",de:"die Aussage",ex:"Ist die Aussage richtig oder falsch?"},
+  {en:"to look / appear",de:"aussehen",ex:"Das sieht schön aus."},
+  {en:"to be off / out",de:"aus sein",ex:"Das Licht ist aus."},
+  {en:"to get out / exit (transport)",de:"aussteigen",ex:"Wo muss ich aussteigen?"},
+  {en:"the ID card / pass",de:"der Ausweis",ex:"Hier ist mein Ausweis."},
+  {en:"to undress / take off (clothes)",de:"(sich) ausziehen",ex:"Zieh die Schuhe aus, bitte!"},
+  {en:"the car",de:"das Auto",ex:"Er kommt mit dem Auto."},
+  {en:"the motorway / highway",de:"die Autobahn",ex:"Wo geht's hier bitte zur Autobahn?"},
+  {en:"the machine / vending machine",de:"der Automat",ex:"Die Fahrkarten gibt es nur am Automaten."},
+  {en:"automatic",de:"automatisch",ex:"Du musst nichts machen. Das geht automatisch."},
+  {en:"the baby",de:"das Baby",ex:"Mein Kind ist noch ein Baby."},
+  {en:"the bakery",de:"die Bäckerei",ex:"Ich geh mal schnell zur Bäckerei."},
+  {en:"the bathroom / bath",de:"das Bad",ex:"Wir haben kein großes Bad."},
+  {en:"to bathe / have a bath",de:"baden",ex:"Ich bade nicht so gern, ich dusche lieber."},
+  {en:"the train / railway",de:"die Bahn",ex:"Wir fahren lieber mit der Bahn."},
+  {en:"the train station",de:"der Bahnhof",ex:"Komme ich hier zum Bahnhof?"},
+  {en:"the platform (train)",de:"der Bahnsteig",ex:"Auf welchem Bahnsteig fährt der Zug?"},
+  {en:"soon",de:"bald",ex:"Ich komme bald."},
+  {en:"the balcony",de:"der Balkon",ex:"Die Wohnung hat auch einen kleinen Balkon."},
+  {en:"the banana",de:"die Banane",ex:"Drei Bananen, bitte!"},
+  {en:"the bank / bench",de:"die Bank",ex:"Die Bank schließt schon um vier Uhr."},
+  {en:"cash / in cash",de:"bar",ex:"Muss ich bar zahlen oder geht's auch mit Karte?"},
+  {en:"the belly / stomach",de:"der Bauch",ex:"Seit gestern tut mir der Bauch weh."},
+  {en:"the tree",de:"der Baum",ex:"Vorsicht, fahr nicht an den Baum!"},
+  {en:"the official / civil servant",de:"der Beamte",ex:"Fragen Sie die Beamtin an Schalter acht!"},
+  {en:"to mean / to signify",de:"bedeuten",ex:"Was bedeutet das Wort?"},
+  {en:"to begin / to start",de:"beginnen",ex:"Das Spiel beginnt um 15.30 Uhr."},
+  {en:"near / with / at (place/time)",de:"bei",ex:"Offenbach liegt bei Frankfurt."},
+  {en:"both",de:"beide",ex:"Beide Eltern arbeiten."},
+  {en:"the leg",de:"das Bein",ex:"Mein rechtes Bein tut weh."},
+  {en:"the example",de:"das Beispiel",ex:"Kannst du mir ein Beispiel sagen?"},
+  {en:"for example",de:"zum Beispiel / z.B.",ex:"Viele meiner Verwandten, z. B. meine beiden Brüder..."},
+  {en:"well-known / famous",de:"bekannt",ex:"Picasso ist sehr bekannt."},
+  {en:"the acquaintance",de:"der/die Bekannte",ex:"Ein Bekannter von mir heißt Klaus."},
+  {en:"to receive / to get",de:"bekommen",ex:"Haben Sie meinen Brief bekommen?"},
+  {en:"to use",de:"benutzen",ex:"Die Aufzüge bitte nicht benutzen!"},
+  {en:"the profession / job",de:"der Beruf",ex:"Was sind Sie von Beruf?"},
+  {en:"occupied / busy / taken",de:"besetzt",ex:"Die Nummer ist immer besetzt."},
+  {en:"to visit (a sight)",de:"besichtigen",ex:"Ich möchte gern den Dom besichtigen."},
+  {en:"better",de:"besser",ex:"Es geht mir schon besser."},
+  {en:"best",de:"best-",ex:"Am besten treffen wir uns morgen."},
+  {en:"to order",de:"bestellen",ex:"Wir möchten bestellen, bitte."},
+  {en:"to visit (a person)",de:"besuchen",ex:"Darf ich dich besuchen?"},
+  {en:"the bed",de:"das Bett",ex:"Wir brauchen noch ein Kinderbett."},
+  {en:"to pay",de:"bezahlen",ex:"Wo muss ich bezahlen?"},
+  {en:"the beer",de:"das Bier",ex:"Noch ein Bier bitte."},
+  {en:"the picture / image",de:"das Bild",ex:"Hast du ein Bild von deinem Sohn?"},
+  {en:"cheap / inexpensive",de:"billig",ex:"Die Jacke kostet nur 10 Euro! Die ist aber billig!"},
+  {en:"the pear",de:"die Birne",ex:"Ein Kilo Birnen, bitte!"},
+  {en:"until / to / as far as",de:"bis",ex:"Ich fahre nur bis Stuttgart."},
+  {en:"a little / a bit",de:"ein bisschen",ex:"Ich spreche ein bisschen Deutsch."},
+  {en:"please / you're welcome",de:"bitte",ex:"Eine Tasse Kaffee, bitte!"},
+  {en:"the request / favour",de:"die Bitte",ex:"Ich habe noch eine Bitte."},
+  {en:"to ask / to request",de:"bitten",ex:"Darf ich Sie um etwas bitten?"},
+  {en:"bitter",de:"bitter",ex:"Der Kaffee schmeckt bitter."},
+  {en:"to stay / to remain",de:"bleiben",ex:"Ich bleibe heute zu Hause."},
+  {en:"the pencil",de:"der Bleistift",ex:"Hast du einen Bleistift?"},
+  {en:"the view",de:"der Blick",ex:"Von diesem Hotel hat man einen guten Blick auf den Rhein."},
+  {en:"the flower",de:"die Blume",ex:"Gefallen dir die Blumen?"},
+  {en:"the form / sheet",de:"der Bogen",ex:"Schreiben Sie Ihre Lösungen bitte auf den Antwortbogen."},
+  {en:"angry / bad / evil",de:"böse",ex:"Sie ist böse auf mich."},
+  {en:"to need",de:"brauchen",ex:"Brauchst du die Zeitung noch?"},
+  {en:"wide / broad",de:"breit",ex:"Wie breit ist der Schrank?"},
+  {en:"the letter",de:"der Brief",ex:"Haben Sie einen Brief für mich?"},
+  {en:"the stamp",de:"die Briefmarke",ex:"Kaufst du bitte Briefmarken bei der Post."},
+  {en:"to bring",de:"bringen",ex:"Bringen Sie mir bitte noch einen Kaffee!"},
+  {en:"the bread",de:"das Brot",ex:"Haben Sie auch Weißbrot?"},
+  {en:"the bread roll",de:"das Brötchen",ex:"Möchtest du Brötchen zum Frühstück?"},
+  {en:"the brother",de:"der Bruder",ex:"Sein Bruder arbeitet auch hier."},
+  {en:"the book",de:"das Buch",ex:"Gute Bücher sind oft sehr teuer."},
+  {en:"the letter (of alphabet)",de:"der Buchstabe",ex:"Diesen Buchstaben gibt es in meiner Sprache nicht."},
+  {en:"to spell",de:"buchstabieren",ex:"Bitte buchstabieren Sie Ihren Namen."},
+  {en:"the bus",de:"der Bus",ex:"Wann kommt der nächste Bus?"},
+  {en:"the butter",de:"die Butter",ex:"Für mich bitte ein Brötchen mit Butter und Käse."},
+  {en:"the café",de:"das Café",ex:"Sollen wir uns im Café treffen?"},
+  {en:"the CD",de:"die CD",ex:"Bring bitte deine Lieblings-CD mit."},
+  {en:"the boss / manager",de:"der Chef",ex:"Wir haben eine neue Chefin."},
+  {en:"approximately / about",de:"circa / ca.",ex:"Von Mainz nach Frankfurt sind es circa fünfzig Kilometer."},
+  {en:"the computer",de:"der Computer",ex:"Wann bekommst du deinen neuen Computer?"},
+  {en:"there / here (pointing)",de:"da",ex:"Da hinten ist er ja."},
+  {en:"the lady",de:"die Dame",ex:"Sehr geehrte Damen und Herren!"},
+  {en:"next to it / beside it",de:"daneben",ex:"Du kennst doch die Post. Daneben ist die Bank."},
+  {en:"to thank",de:"danken",ex:"Ich danke Ihnen für die Einladung."},
+  {en:"the thanks",de:"der Dank",ex:"Vielen Dank! Herzlichen Dank!"},
+  {en:"thank you",de:"danke",ex:"Soll ich Ihnen helfen? – Nein, danke!"},
+  {en:"then / after that",de:"dann",ex:"Ich muss noch schnell zur Post, dann komme ich."},
+  {en:"the date",de:"das Datum",ex:"Bitte schreiben Sie noch das Datum auf das Formular."},
+  {en:"to last / to take (time)",de:"dauern",ex:"Wie lange dauert der Film?"},
+  {en:"your (informal)",de:"dein-",ex:"Ist das dein Auto?"},
+  {en:"because / for",de:"denn",ex:"Ich kann nicht kommen, denn ich bin krank."},
+  {en:"the / that (articles/pronouns)",de:"der, die, das",ex:"Ich nehme das da."},
+  {en:"you (object, informal)",de:"dich",ex:"Die Blumen sind für dich."},
+  {en:"this / these",de:"dies-",ex:"Ich nehme lieber diesen Kuchen."},
+  {en:"to you / for you (dative)",de:"dir",ex:"Gefallen dir die Blumen?"},
+  {en:"the disco / nightclub",de:"die Disco",ex:"Heute abend gehen wir in die Disco tanzen."},
+  {en:"the doctor (title)",de:"der Doktor",ex:"Wir gehen zum Doktor."},
+  {en:"the double room",de:"das Doppelzimmer",ex:"Wollen Sie ein Doppelzimmer oder ein Einzelzimmer?"},
+  {en:"the village",de:"das Dorf",ex:"Meine Familie lebt in einem Dorf."},
+  {en:"there / over there",de:"dort / dorthin",ex:"Dort ist unser Haus."},
+  {en:"outside",de:"draußen",ex:"Wollen wir draußen sitzen?"},
+  {en:"to print",de:"drucken",ex:"Bitte drucke das Formular für mich."},
+  {en:"the printer",de:"der Drucker",ex:"Mein Drucker ist kaputt."},
+  {en:"to press / push",de:"drücken",ex:"Drück hier, dann geht der Computer an."},
+  {en:"through",de:"durch",ex:"Am besten gehen Sie durch die Breite Straße."},
+  {en:"the announcement / broadcast",de:"die Durchsage",ex:"Ich habe die Durchsage nicht verstanden."},
+  {en:"may / to be allowed to",de:"dürfen",ex:"Sie dürfen hier nicht rauchen."},
+  {en:"the thirst",de:"der Durst",ex:"Ich habe großen Durst."},
+  {en:"to shower",de:"(sich) duschen",ex:"Ich bade nicht so gern, ich dusche lieber."},
+  {en:"the shower",de:"die Dusche",ex:"Unsere Wohnung hat nur eine Dusche."},
+  {en:"the corner",de:"die Ecke",ex:"An der nächsten Ecke links."},
+  {en:"the wife / husband",de:"die Ehefrau / der Ehemann",ex:"Das ist mein (Ehe-) Mann / meine (Ehe-) Frau."},
+  {en:"the egg",de:"das Ei",ex:"Möchtest du ein Ei zum Frühstück?"},
+  {en:"in a hurry",de:"eilig",ex:"Hast du es eilig?"},
+  {en:"a / one",de:"ein-",ex:"Ich nehme ein Bier. Willst du auch eins?"},
+  {en:"simple / one-way (ticket)",de:"einfach",ex:"Die Prüfung ist ganz einfach."},
+  {en:"the entrance",de:"der Eingang",ex:"Der Eingang ist um die Ecke."},
+  {en:"to go shopping",de:"einkaufen",ex:"Ich muss noch für morgen einkaufen."},
+  {en:"to invite",de:"einladen",ex:"Darf ich Sie zu einem Kaffee einladen?"},
+  {en:"the invitation",de:"die Einladung",ex:"Danke für die Einladung!"},
+  {en:"once / one time",de:"einmal",ex:"Diese Prüfung mache ich nicht noch einmal."},
+  {en:"to board / get on (transport)",de:"einsteigen",ex:"Schnell, steig ein, der Zug fährt gleich."},
+  {en:"the admission / entry",de:"der Eintritt",ex:"Der Preis für den Eintritt ist 5 Euro."},
+  {en:"the single room",de:"das Einzelzimmer",ex:"Haben Sie noch ein Einzelzimmer?"},
+  {en:"the parents",de:"die Eltern",ex:"Meine Eltern leben in Spanien."},
+  {en:"the email",de:"die E-Mail",ex:"Ich habe Ihre E-Mail nicht bekommen."},
+  {en:"the recipient",de:"der Empfänger",ex:"Auf dem Brief steht dein Name, also bist du der Empfänger."},
+  {en:"to recommend",de:"empfehlen",ex:"Welchen Wein können Sie mir empfehlen?"},
+  {en:"to end",de:"enden",ex:"Die Straße endet hier."},
+  {en:"the end",de:"das Ende",ex:"Sie wohnt am Ende der Straße."},
+  {en:"to excuse / to apologise",de:"entschuldigen",ex:"Entschuldigen Sie bitte!"},
+  {en:"excuse me / sorry",de:"die Entschuldigung",ex:"Entschuldigung! – Bitte."},
+  {en:"he",de:"er",ex:"Er heißt Ali."},
+  {en:"the result",de:"das Ergebnis",ex:"Das Ergebnis des Tests bekommen Sie in zwei Wochen."},
+  {en:"to explain",de:"erklären",ex:"Kannst du mir das erklären?"},
+  {en:"to allow / permit",de:"erlauben",ex:"Rauchen ist hier nicht erlaubt."},
+  {en:"the adult",de:"der Erwachsene",ex:"Dieser Film ist nur für Erwachsene."},
+  {en:"to tell / to narrate",de:"erzählen",ex:"Wir müssen euch etwas erzählen!"},
+  {en:"it",de:"es",ex:"Es regnet."},
+  {en:"to eat",de:"essen",ex:"Was gibt es zu essen?"},
+  {en:"the food / meal",de:"das Essen",ex:"Das Essen ist heute sehr gut."},
+  {en:"your (plural informal)",de:"euer",ex:"Euer Kurs beginnt heute."},
+  {en:"to drive / to travel",de:"fahren",ex:"Ich fahre mit dem Auto zur Arbeit."},
+  {en:"the driver",de:"der Fahrer",ex:"Bitte nicht mit dem Fahrer sprechen!"},
+  {en:"the ticket (transport)",de:"die Fahrkarte",ex:"Hast du schon eine Fahrkarte?"},
+  {en:"the bicycle",de:"das Fahrrad",ex:"Fährst du mit dem Fahrrad oder mit dem Auto?"},
+  {en:"wrong / false / incorrect",de:"falsch",ex:"Das ist falsch."},
+  {en:"the family",de:"die Familie",ex:"Meine Familie lebt in Spanien."},
+  {en:"the surname / family name",de:"der Familienname",ex:"Meine Familiennamen sind García González."},
+  {en:"the marital status",de:"der Familienstand",ex:"Bei „Familienstand" musst du „ledig" ankreuzen."},
+  {en:"the colour",de:"die Farbe",ex:"Die Farbe gefällt mir gut."},
+  {en:"the fax",de:"das Fax",ex:"Schicken Sie uns einfach ein Fax!"},
+  {en:"holiday / public holiday",de:"Feiertag / Feierabend",ex:"Am Montag ist Feiertag."},
+  {en:"to celebrate",de:"feiern",ex:"Wir feiern heute meinen Geburtstag."},
+  {en:"to be missing / to be absent",de:"fehlen",ex:"Was fehlt Ihnen?"},
+  {en:"the mistake / error",de:"der Fehler",ex:"Diesen Fehler mache ich immer."},
+  {en:"to watch TV",de:"fernsehen",ex:"Wollen wir heute Abend mal fernsehen?"},
+  {en:"ready / finished",de:"fertig",ex:"Bist du fertig?"},
+  {en:"the fire / a light (for cigarette)",de:"das Feuer",ex:"Haben Sie Feuer?"},
+  {en:"the fever / temperature",de:"das Fieber",ex:"Mein Mann hat noch immer Fieber."},
+  {en:"the film / movie",de:"der Film",ex:"Ich möchte gern diesen Film sehen."},
+  {en:"to find",de:"finden",ex:"Wir müssen den Schlüssel finden."},
+  {en:"the company / firm",de:"die Firma",ex:"Er arbeitet jetzt bei einer anderen Firma."},
+  {en:"the fish",de:"der Fisch",ex:"Ich esse gern Fisch."},
+  {en:"the bottle",de:"die Flasche",ex:"Eine Flasche Bier, bitte."},
+  {en:"the meat",de:"das Fleisch",ex:"Fleisch mag ich nicht."},
+  {en:"to fly",de:"fliegen",ex:"Ich fliege nicht gern."},
+  {en:"to take off (plane)",de:"abfliegen",ex:"Wann fliegst du ab?"},
+  {en:"the departure (flight)",de:"der Abflug",ex:"Der Abflug ist um 11.20 Uhr."},
+  {en:"the airport",de:"der Flughafen",ex:"Kannst du mich zum Flughafen bringen?"},
+  {en:"the aeroplane",de:"das Flugzeug",ex:"Das Flugzeug aus Berlin kommt heute später an."},
+  {en:"the form",de:"das Formular",ex:"Sie müssen dieses Formular ausfüllen."},
+  {en:"the photo",de:"das Foto",ex:"Darf ich ein Foto machen?"},
+  {en:"to ask",de:"fragen",ex:"Er möchte Sie etwas fragen."},
+  {en:"the question",de:"die Frage",ex:"Ich habe eine Frage."},
+  {en:"the woman / Mrs.",de:"die Frau",ex:"Guten Tag, Frau Schmitt!"},
+  {en:"free / available",de:"frei",ex:"Ist der Platz noch frei?"},
+  {en:"the free time / leisure",de:"die Freizeit",ex:"In meiner Freizeit spiele ich oft Fußball."},
+  {en:"foreign / unfamiliar",de:"fremd",ex:"Das weiß ich nicht; ich bin fremd hier."},
+  {en:"to look forward to / to be pleased",de:"(sich) freuen",ex:"Ich freue mich auf den Urlaub."},
+  {en:"the friend / boyfriend",de:"der Freund",ex:"Das ist ein Freund von mir."},
+  {en:"previously / in the past",de:"früher",ex:"Früher waren wir oft zusammen im Kino."},
+  {en:"to have breakfast",de:"frühstücken",ex:"Am Sonntag frühstücke ich gern im Bett."},
+  {en:"the breakfast",de:"das Frühstück",ex:"Möchtest du ein Ei zum Frühstück?"},
+  {en:"the guided tour",de:"die Führung",ex:"Die Führung durch das Haus beginnt in 3 Minuten."},
+  {en:"for",de:"für",ex:"Das ist für Sie."},
+  {en:"the foot",de:"der Fuß",ex:"Der linke Fuß tut mir weh."},
+  {en:"football / soccer",de:"der Fußball",ex:"Spielt ihr gerne Fußball?"}
+];
+
+let deck = [...cards];
+let idx = 0, know = 0, learning = 0, flipped = false;
+
+function shuffle() {
+  for(let i = deck.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+  idx = 0; know = 0; learning = 0; flipped = false;
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'block';
+  document.getElementById('controls').style.display = 'flex';
+  updateCard();
+}
+
+function updateCard() {
+  const ci = document.getElementById('cardInner');
+  ci.classList.remove('flipped');
+  flipped = false;
+  const ctrl = document.getElementById('controls');
+  ctrl.classList.remove('visible');
+  const card = deck[idx];
+  document.getElementById('frontWord').textContent = card.en;
+  document.getElementById('backWord').textContent = card.de;
+  document.getElementById('backExample').textContent = card.ex;
+  document.getElementById('counter').textContent = `Card ${idx+1} of ${deck.length}`;
+  document.getElementById('progress').style.width = ((idx/deck.length)*100) + '%';
+  document.getElementById('knowCount').textContent = know + ' know';
+  document.getElementById('learnCount').textContent = learning + ' learning';
+}
+
+function flipCard() {
+  if(!flipped) {
+    document.getElementById('cardInner').classList.add('flipped');
+    flipped = true;
+    document.getElementById('controls').classList.add('visible');
+  }
+}
+
+function mark(correct) {
+  if(correct) know++; else learning++;
+  idx++;
+  if(idx >= deck.length) showSummary();
+  else updateCard();
+}
+
+function showSummary() {
+  document.getElementById('cardArea').style.display = 'none';
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('progress').style.width = '100%';
+  document.getElementById('counter').textContent = `Done! ${deck.length} cards`;
+  document.getElementById('summary').style.display = 'block';
+  document.getElementById('summaryText').textContent =
+    `You knew ${know} out of ${deck.length} cards. Still learning: ${learning}.`;
+}
+
+function restart() {
+  idx = 0; know = 0; learning = 0; flipped = false;
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'block';
+  document.getElementById('controls').style.display = 'flex';
+  updateCard();
+}
+
+updateCard();
+</script>
+</body>
+</html>

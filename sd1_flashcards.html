@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>German Flashcards A-Z | Start Deutsch 1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f4f0; min-height: 100vh; padding: 2rem 1rem; color: #1a1a1a; }
+  h1 { text-align: center; font-size: 1.1rem; font-weight: 500; color: #555; margin-bottom: 0.25rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .subtitle { text-align: center; font-size: 0.8rem; color: #999; margin-bottom: 2rem; }
+  .progress-bg { height: 4px; background: #ddd; border-radius: 2px; max-width: 540px; margin: 0 auto 1.5rem; }
+  .progress-fill { height: 4px; background: #7F77DD; border-radius: 2px; transition: width 0.3s; }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; max-width: 540px; margin: 0 auto 0.75rem; flex-wrap: wrap; gap: 8px; }
+  .counter { font-size: 13px; color: #777; }
+  .top-controls { display: flex; gap: 6px; }
+  .shuffle-btn, .filter-btn { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 5px 14px; font-size: 13px; color: #555; cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .shuffle-btn:hover, .filter-btn:hover { background: #f0efeb; }
+  .filter-btn.active { background: #7F77DD; color: #fff; border-color: #7F77DD; }
+  .card-area { -webkit-perspective: 1000px; perspective: 1000px; width: 100%; max-width: 540px; margin: 0 auto 1.25rem; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .card-inner { position: relative; width: 100%; height: 210px; -webkit-transform-style: preserve-3d; transform-style: preserve-3d; transition: transform 0.45s; pointer-events: none; }
+  .card-inner.flipped { -webkit-transform: rotateY(180deg); transform: rotateY(180deg); }
+  .card-face { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; border: 1px solid #e0dfd9; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #fff; }
+  .card-back { -webkit-transform: rotateY(180deg); transform: rotateY(180deg); background: #f9f8f4; }
+  .card-hint { font-size: 11px; color: #aaa; margin-bottom: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card-word { font-size: 26px; font-weight: 500; color: #1a1a1a; text-align: center; }
+  .card-example { font-size: 13px; color: #888; margin-top: 10px; text-align: center; font-style: italic; max-width: 340px; line-height: 1.5; }
+  .controls { display: flex; gap: 10px; justify-content: center; max-width: 540px; margin: 0 auto 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .controls.visible { opacity: 1; pointer-events: auto; }
+  .btn { flex: 1; padding: 14px 10px; border: 1px solid #ddd; border-radius: 10px; background: #fff; font-size: 15px; cursor: pointer; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .btn:active { transform: scale(0.97); }
+  .btn-wrong { color: #c0442a; border-color: #e8c4ba; }
+  .btn-wrong:hover { background: #fdf1ee; }
+  .btn-right { color: #1a8060; border-color: #b0d9ca; }
+  .btn-right:hover { background: #edf7f3; }
+  .meta { display: flex; justify-content: space-between; max-width: 540px; margin: 0 auto; font-size: 13px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+  .badge-know { background: #e1f5ee; color: #0f6e56; }
+  .badge-learn { background: #faeae7; color: #993c1d; }
+  .summary { text-align: center; padding: 2rem 1rem; display: none; }
+  .summary-icon { font-size: 48px; margin-bottom: 1rem; }
+  .summary h2 { font-size: 20px; font-weight: 500; margin-bottom: 0.5rem; }
+  .summary p { color: #777; font-size: 14px; }
+  .restart-btn { margin-top: 1.5rem; padding: 10px 28px; border: 1px solid #ddd; border-radius: 10px; background: #fff; cursor: pointer; font-size: 14px; color: #1a1a1a; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .restart-btn:hover { background: #f0efeb; }
+  .section-picker { max-width: 540px; margin: 0 auto 1rem; display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; display: none; }
+  .section-picker.visible { display: flex; }
+  .section-tag { padding: 3px 10px; border: 1px solid #ddd; border-radius: 14px; font-size: 11px; cursor: pointer; background: #fff; color: #777; transition: all 0.15s; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .section-tag:hover { border-color: #7F77DD; color: #7F77DD; }
+  .section-tag.active { background: #7F77DD; color: #fff; border-color: #7F77DD; }
+  .review-bar { max-width: 540px; margin: 1.5rem auto 0; padding: 10px 16px; background: #faeae7; border: 1px solid #e8c4ba; border-radius: 10px; display: none; align-items: center; justify-content: space-between; gap: 8px; }
+  .review-bar.visible { display: flex; }
+  .review-bar-text { font-size: 13px; color: #993c1d; }
+  .review-bar-text strong { font-weight: 600; }
+  .review-bar-btns { display: flex; gap: 6px; }
+  .review-bar-btn { padding: 5px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 1px solid #e8c4ba; background: #fff; color: #993c1d; transition: background 0.15s; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .review-bar-btn:hover { background: #fdf1ee; }
+  .review-bar-btn.primary { background: #c0442a; color: #fff; border-color: #c0442a; }
+  .review-bar-btn.primary:hover { background: #a83a24; }
+  .clear-btn { padding: 5px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #888; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .clear-btn:hover { background: #f0efeb; }
+</style>
+</head>
+<body>
+
+<h1>Start Deutsch 1 &mdash; Wortliste</h1>
+<p class="subtitle" id="subtitle">German Flashcards A-Z</p>
+
+<div class="top-bar">
+  <span class="counter" id="counter">Card 1 of ...</span>
+  <div class="top-controls">
+    <button class="filter-btn" onclick="toggleFilter()">Filter</button>
+    <button class="shuffle-btn" onclick="shuffle()">Shuffle</button>
+  </div>
+</div>
+
+<div class="section-picker" id="sectionPicker"></div>
+
+<div class="progress-bg">
+  <div class="progress-fill" id="progress" style="width:0%"></div>
+</div>
+
+<div class="card-area" id="cardArea" onclick="flipCard()">
+  <div class="card-inner" id="cardInner">
+    <div class="card-face card-front">
+      <div class="card-hint">English &mdash; tap to reveal</div>
+      <div class="card-word" id="frontWord"></div>
+    </div>
+    <div class="card-face card-back">
+      <div class="card-hint">Deutsch</div>
+      <div class="card-word" id="backWord"></div>
+      <div class="card-example" id="backExample"></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <button class="btn btn-wrong" onclick="mark(false)">&cross; Still learning</button>
+  <button class="btn btn-right" onclick="mark(true)">&check; Got it</button>
+</div>
+
+<div class="meta">
+  <span><span class="badge badge-know" id="knowCount">0 know</span></span>
+  <span><span class="badge badge-learn" id="learnCount">0 learning</span></span>
+</div>
+
+<div class="review-bar" id="reviewBar">
+  <span class="review-bar-text"><strong id="reviewCount">0</strong> cards to review</span>
+  <div class="review-bar-btns">
+    <button class="review-bar-btn primary" onclick="reviewLearning()">Review now</button>
+    <button class="clear-btn" onclick="clearLearning()">Clear</button>
+    <button class="review-bar-btn" id="backFullBtn" onclick="backToFullDeck()" style="display:none">← Full deck</button>
+  </div>
+</div>
+
+<div class="summary" id="summary">
+  <div class="summary-icon">&#127881;</div>
+  <h2>Round complete!</h2>
+  <p id="summaryText"></p>
+  <button class="restart-btn" id="reviewBtn" onclick="reviewLearning()" style="display:none;background:#faeae7;color:#993c1d;border-color:#e8c4ba">Review learning cards</button>
+  <button class="restart-btn" onclick="restart()">Go again (full deck)</button>
+</div>
+
+<script>
+/* ================================================================
+   COMPLETE SD1 WORTLISTE - flashcards
+   Inventory (days, months, seasons, colours, directions, time)
+   + Alphabetical A-Z
+   ================================================================ */
+const allCards=[
+// -- INVENTORY: Time measures --
+{en:"the second",de:"die Sekunde",ex:"Einen Moment, das dauert nur ein paar Sekunden.",sec:"Zeit"},
+{en:"the minute",de:"die Minute",ex:"Warten Sie bitte f\u00fcnf Minuten.",sec:"Zeit"},
+{en:"the hour",de:"die Stunde",ex:"Ich bin in einer Stunde zur\u00fcck.",sec:"Zeit"},
+{en:"the day",de:"der Tag",ex:"Heute ist ein sch\u00f6ner Tag.",sec:"Zeit"},
+{en:"the week",de:"die Woche",ex:"Sehen wir uns n\u00e4chste Woche?",sec:"Zeit"},
+{en:"the year",de:"das Jahr",ex:"Alter: 26 Jahre.",sec:"Zeit"},
+// -- INVENTORY: Weekdays --
+{en:"Monday",de:"der Montag",ex:"Am Montag ist Feiertag.",sec:"Wochentage"},
+{en:"Tuesday",de:"der Dienstag",ex:"Meine Schwester kommt am Dienstag.",sec:"Wochentage"},
+{en:"Wednesday",de:"der Mittwoch",ex:"Am Mittwoch habe ich einen Termin.",sec:"Wochentage"},
+{en:"Thursday",de:"der Donnerstag",ex:"Der Kurs ist jeden Donnerstag.",sec:"Wochentage"},
+{en:"Friday",de:"der Freitag",ex:"Wir treffen uns immer freitags.",sec:"Wochentage"},
+{en:"Saturday",de:"der Samstag",ex:"Die Bank hat am Samstag geschlossen.",sec:"Wochentage"},
+{en:"Sunday",de:"der Sonntag",ex:"Am Sonntag fr\u00fchst\u00fccke ich gern im Bett.",sec:"Wochentage"},
+{en:"the weekend",de:"das Wochenende",ex:"Am Wochenende haben wir G\u00e4ste.",sec:"Wochentage"},
+// -- INVENTORY: Times of day --
+{en:"the morning",de:"der Morgen",ex:"Guten Morgen!",sec:"Tageszeiten"},
+{en:"the late morning",de:"der Vormittag",ex:"Der Vormittag ist schon fast vorbei.",sec:"Tageszeiten"},
+{en:"noon / midday",de:"der Mittag",ex:"Von 12.00 bis 12.30 Uhr haben wir Mittagspause.",sec:"Tageszeiten"},
+{en:"the afternoon",de:"der Nachmittag",ex:"Am Nachmittag gehe ich einkaufen.",sec:"Tageszeiten"},
+{en:"the evening",de:"der Abend",ex:"Was machst du heute Abend?",sec:"Tageszeiten"},
+{en:"the night",de:"die Nacht",ex:"Heute Nacht war das Licht an.",sec:"Tageszeiten"},
+// -- INVENTORY: Months --
+{en:"January",de:"der Januar",ex:"Im Januar ist es kalt.",sec:"Monate"},
+{en:"February",de:"der Februar",ex:"Der Februar hat 28 Tage.",sec:"Monate"},
+{en:"March",de:"der M\u00e4rz",ex:"Heute ist der erste M\u00e4rz.",sec:"Monate"},
+{en:"April",de:"der April",ex:"Berlin, 12. April 2002.",sec:"Monate"},
+{en:"May",de:"der Mai",ex:"Im Mai sind die Blumen sch\u00f6n.",sec:"Monate"},
+{en:"June",de:"der Juni",ex:"Im Juni beginnt der Sommer.",sec:"Monate"},
+{en:"July",de:"der Juli",ex:"Wir machen Anfang Juli Urlaub.",sec:"Monate"},
+{en:"August",de:"der August",ex:"Im August ist es sehr warm.",sec:"Monate"},
+{en:"September",de:"der September",ex:"Ich nehme im September Urlaub.",sec:"Monate"},
+{en:"October",de:"der Oktober",ex:"Das Studium beginnt im Oktober.",sec:"Monate"},
+{en:"November",de:"der November",ex:"Im November regnet es viel.",sec:"Monate"},
+{en:"December",de:"der Dezember",ex:"Im Dezember feiern wir Weihnachten.",sec:"Monate"},
+// -- INVENTORY: Seasons --
+{en:"spring",de:"der Fr\u00fchling / das Fr\u00fchjahr",ex:"Im Fr\u00fchling sind die Blumen sch\u00f6n.",sec:"Jahreszeiten"},
+{en:"summer",de:"der Sommer",ex:"Im Sommer ist das Obst billig.",sec:"Jahreszeiten"},
+{en:"autumn",de:"der Herbst",ex:"Im Herbst wird es kalt.",sec:"Jahreszeiten"},
+{en:"winter",de:"der Winter",ex:"Im Winter fahren wir Ski.",sec:"Jahreszeiten"},
+// -- INVENTORY: Colours --
+{en:"black",de:"schwarz",ex:"Mein Lieblingsfilm ist 'Schwarze Augen'.",sec:"Farben"},
+{en:"grey",de:"grau",ex:"Der Himmel ist heute grau.",sec:"Farben"},
+{en:"blue",de:"blau",ex:"Er hat blaue Augen.",sec:"Farben"},
+{en:"green",de:"gr\u00fcn",ex:"Die Tomate ist noch gr\u00fcn.",sec:"Farben"},
+{en:"white",de:"wei\u00df",ex:"Haben Sie auch Wei\u00dfbrot?",sec:"Farben"},
+{en:"red",de:"rot",ex:"Die Ampel ist rot.",sec:"Farben"},
+{en:"yellow",de:"gelb",ex:"Die Banane ist gelb.",sec:"Farben"},
+{en:"brown",de:"braun",ex:"Sie hat braune Haare.",sec:"Farben"},
+// -- INVENTORY: Directions --
+{en:"the north",de:"der Norden",ex:"Die meisten Norddeutschen sind sehr gro\u00df.",sec:"Himmelsrichtungen"},
+{en:"the south",de:"der S\u00fcden",ex:"Im S\u00fcden scheint die Sonne.",sec:"Himmelsrichtungen"},
+{en:"the west",de:"der Westen",ex:"Frankfurt liegt im Westen.",sec:"Himmelsrichtungen"},
+{en:"the east",de:"der Osten",ex:"Der Wind kommt aus Osten.",sec:"Himmelsrichtungen"},
+
+// ====== ALPHABETICAL WORD LIST A - Z ======
+
+// -- A --
+{en:"from / starting (time/place)",de:"ab",ex:"Ab morgen muss ich arbeiten.",sec:"A"},
+{en:"but / however",de:"aber",ex:"Ich bin oft im B\u00fcro, aber nur f\u00fcr wenige Stunden.",sec:"A"},
+{en:"to depart / to leave",de:"abfahren",ex:"Wir fahren um zw\u00f6lf Uhr ab.",sec:"A"},
+{en:"the departure",de:"die Abfahrt",ex:"Vor der Abfahrt rufe ich an.",sec:"A"},
+{en:"to hand in / drop off",de:"abgeben",ex:"Ich muss meine Schl\u00fcssel abgeben.",sec:"A"},
+{en:"to pick up (a person/thing)",de:"abholen",ex:"Wann kann ich den Schrank bei dir abholen?",sec:"A"},
+{en:"the sender (of a letter)",de:"der Absender",ex:"Da ist ein Brief f\u00fcr dich ohne Absender.",sec:"A"},
+{en:"attention / watch out",de:"Achtung",ex:"Achtung! Das d\u00fcrfen Sie nicht tun.",sec:"A"},
+{en:"the address",de:"die Adresse",ex:"K\u00f6nnen Sie mir seine Adresse sagen?",sec:"A"},
+{en:"all / everything / everyone",de:"all-",ex:"Das ist alles. Hast du alles?",sec:"A"},
+{en:"alone",de:"allein",ex:"Er kommt allein.",sec:"A"},
+{en:"so / well then / therefore",de:"also",ex:"Also, es ist so: ...",sec:"A"},
+{en:"old / aged",de:"alt",ex:"Wie alt sind Sie?",sec:"A"},
+{en:"the age",de:"das Alter",ex:"Alter: 26 Jahre.",sec:"A"},
+{en:"at / on / to (location/time)",de:"an",ex:"Wir treffen uns am Bahnhof.",sec:"A"},
+{en:"to offer",de:"anbieten",ex:"Was darf ich dir anbieten?",sec:"A"},
+{en:"the offer / deal",de:"das Angebot",ex:"Heute sind Sportschuhe im Angebot.",sec:"A"},
+{en:"other / different",de:"ander-",ex:"Nein, ich m\u00f6chte die andere.",sec:"A"},
+{en:"to start / to begin",de:"anfangen",ex:"Der Unterricht f\u00e4ngt gleich an.",sec:"A"},
+{en:"the beginning / start",de:"der Anfang",ex:"Wir machen Anfang Juli Urlaub.",sec:"A"},
+{en:"to click on",de:"anklicken",ex:"Da musst du dieses Wort anklicken.",sec:"A"},
+{en:"to arrive",de:"ankommen",ex:"Wann kommt dieser Zug in Hamburg an?",sec:"A"},
+{en:"the arrival",de:"die Ankunft",ex:"Auf diesem Plan steht nur die Ankunft der Z\u00fcge.",sec:"A"},
+{en:"to tick / cross a box",de:"ankreuzen",ex:"Auf dem Formular m\u00fcssen Sie etwas ankreuzen.",sec:"A"},
+{en:"to turn on (light etc.)",de:"anmachen",ex:"Mach bitte das Licht an!",sec:"A"},
+{en:"to register / sign up",de:"(sich) anmelden",ex:"Wo kann ich mich anmelden?",sec:"A"},
+{en:"the registration",de:"die Anmeldung",ex:"Eine Anmeldung f\u00fcr diesen Kurs ist nicht mehr m\u00f6glich.",sec:"A"},
+{en:"the salutation / form of address",de:"die Anrede",ex:"Schreiben Sie auch eine Anrede und einen Gru\u00df.",sec:"A"},
+{en:"to call / phone",de:"anrufen",ex:"Kann man Sie anrufen?",sec:"A"},
+{en:"the (phone) call",de:"der Anruf",ex:"Sie bekommt viele Anrufe auf ihrem Handy.",sec:"A"},
+{en:"the answering machine",de:"der Anrufbeantworter",ex:"Sprechen Sie bitte auf den Anrufbeantworter.",sec:"A"},
+{en:"the announcement / message",de:"die Ansage",ex:"H\u00f6ren Sie die Ansagen.",sec:"A"},
+{en:"the connection (transport/phone)",de:"der Anschluss",ex:"In Mannheim haben Sie Anschluss nach Saarbr\u00fccken.",sec:"A"},
+{en:"to be on (light/device)",de:"an sein",ex:"Heute Nacht war das Licht an.",sec:"A"},
+{en:"to answer / reply",de:"antworten",ex:"Er antwortet nicht.",sec:"A"},
+{en:"the answer / reply",de:"die Antwort",ex:"Er gibt leider keine Antwort.",sec:"A"},
+{en:"the advertisement / notice",de:"die Anzeige",ex:"Ich habe Ihre Anzeige in der Zeitung gelesen.",sec:"A"},
+{en:"to get dressed",de:"(sich) anziehen",ex:"Ich muss mich noch anziehen.",sec:"A"},
+{en:"the apartment / flat",de:"das Apartment",ex:"Wir haben ein Apartment gemietet.",sec:"A"},
+{en:"the apple",de:"der Apfel",ex:"Ein Pfund \u00c4pfel bitte.",sec:"A"},
+{en:"appetite / enjoy your meal",de:"der Appetit",ex:"Guten Appetit!",sec:"A"},
+{en:"to work",de:"arbeiten",ex:"Wo arbeiten Sie?",sec:"A"},
+{en:"the work / job",de:"die Arbeit",ex:"Mein Bruder sucht Arbeit.",sec:"A"},
+{en:"unemployed",de:"arbeitslos",ex:"Es gibt viele Leute, die schon lange arbeitslos sind.",sec:"A"},
+{en:"the workplace",de:"der Arbeitsplatz",ex:"An meinem Arbeitsplatz fehlt ein Drucker.",sec:"A"},
+{en:"the arm",de:"der Arm",ex:"Mein Arm tut weh.",sec:"A"},
+{en:"the doctor / physician",de:"der Arzt",ex:"Morgen habe ich einen Termin bei meiner \u00c4rztin.",sec:"A"},
+{en:"also / too / as well",de:"auch",ex:"Ich bin auch Spanier.",sec:"A"},
+{en:"on / at / up (position)",de:"auf",ex:"Die Kinder spielen auf der Stra\u00dfe.",sec:"A"},
+{en:"goodbye (formal)",de:"Auf Wiedersehen",ex:"Auf Wiedersehen!",sec:"A"},
+{en:"the task / exercise",de:"die Aufgabe",ex:"Das ist eine schwere Aufgabe.",sec:"A"},
+{en:"to stop / finish",de:"aufh\u00f6ren",ex:"Der Kurs h\u00f6rt in einer Woche auf.",sec:"A"},
+{en:"to be open",de:"auf sein",ex:"Du brauchst den Schl\u00fcssel nicht. Die Wohnung ist auf.",sec:"A"},
+{en:"to get up / stand up",de:"aufstehen",ex:"Ich muss immer um vier Uhr aufstehen.",sec:"A"},
+{en:"the lift / elevator",de:"der Aufzug",ex:"In diesem Haus gibt es keinen Aufzug.",sec:"A"},
+{en:"the eye",de:"das Auge",ex:"Er hat blaue Augen.",sec:"A"},
+{en:"from / out of",de:"aus",ex:"Er kommt aus Brasilien.",sec:"A"},
+{en:"the excursion / trip",de:"der Ausflug",ex:"Morgen machen wir einen Ausflug nach Heidelberg.",sec:"A"},
+{en:"to fill in / fill out",de:"ausf\u00fcllen",ex:"F\u00fcllen Sie bitte dieses Formular aus.",sec:"A"},
+{en:"the exit",de:"der Ausgang",ex:"Wo ist der Ausgang?",sec:"A"},
+{en:"the information / inquiry",de:"die Auskunft",ex:"K\u00f6nnen Sie mir eine Auskunft geben?",sec:"A"},
+{en:"abroad / foreign country",de:"das Ausland",ex:"Fahren Sie ins Ausland?",sec:"A"},
+{en:"the foreigner",de:"der Ausl\u00e4nder",ex:"Sind Sie Ausl\u00e4nderin?",sec:"A"},
+{en:"foreign / international",de:"ausl\u00e4ndisch",ex:"Leider habe ich nur ausl\u00e4ndisches Geld.",sec:"A"},
+{en:"to turn off (light etc.)",de:"ausmachen",ex:"Mach bitte das Licht aus!",sec:"A"},
+{en:"the statement / answer",de:"die Aussage",ex:"Ist die Aussage richtig oder falsch?",sec:"A"},
+{en:"to look / appear",de:"aussehen",ex:"Das sieht sch\u00f6n aus.",sec:"A"},
+{en:"to be off / out",de:"aus sein",ex:"Das Licht ist aus.",sec:"A"},
+{en:"to get out / exit (transport)",de:"aussteigen",ex:"Wo muss ich aussteigen?",sec:"A"},
+{en:"the ID card / pass",de:"der Ausweis",ex:"Hier ist mein Ausweis.",sec:"A"},
+{en:"to undress / take off (clothes)",de:"(sich) ausziehen",ex:"Zieh die Schuhe aus, bitte!",sec:"A"},
+{en:"the car",de:"das Auto",ex:"Er kommt mit dem Auto.",sec:"A"},
+{en:"the motorway / highway",de:"die Autobahn",ex:"Wo geht's hier bitte zur Autobahn?",sec:"A"},
+{en:"the machine / vending machine",de:"der Automat",ex:"Die Fahrkarten gibt es nur am Automaten.",sec:"A"},
+{en:"automatic",de:"automatisch",ex:"Du musst nichts machen. Das geht automatisch.",sec:"A"},
+
+// -- B --
+{en:"the baby",de:"das Baby",ex:"Mein Kind ist noch ein Baby.",sec:"B"},
+{en:"the bakery",de:"die B\u00e4ckerei",ex:"Ich geh mal schnell zur B\u00e4ckerei.",sec:"B"},
+{en:"the bathroom / bath",de:"das Bad",ex:"Wir haben kein gro\u00dfes Bad.",sec:"B"},
+{en:"to bathe / have a bath",de:"baden",ex:"Ich bade nicht so gern, ich dusche lieber.",sec:"B"},
+{en:"the train / railway",de:"die Bahn",ex:"Wir fahren lieber mit der Bahn.",sec:"B"},
+{en:"the train station",de:"der Bahnhof",ex:"Komme ich hier zum Bahnhof?",sec:"B"},
+{en:"the platform (train)",de:"der Bahnsteig",ex:"Auf welchem Bahnsteig f\u00e4hrt der Zug?",sec:"B"},
+{en:"soon",de:"bald",ex:"Ich komme bald.",sec:"B"},
+{en:"the balcony",de:"der Balkon",ex:"Die Wohnung hat auch einen kleinen Balkon.",sec:"B"},
+{en:"the banana",de:"die Banane",ex:"Drei Bananen, bitte!",sec:"B"},
+{en:"the bank / bench",de:"die Bank",ex:"Die Bank schlie\u00dft schon um vier Uhr.",sec:"B"},
+{en:"cash / in cash",de:"bar",ex:"Muss ich bar zahlen oder geht's auch mit Karte?",sec:"B"},
+{en:"the belly / stomach",de:"der Bauch",ex:"Seit gestern tut mir der Bauch weh.",sec:"B"},
+{en:"the tree",de:"der Baum",ex:"Vorsicht, fahr nicht an den Baum!",sec:"B"},
+{en:"the official / civil servant",de:"der Beamte",ex:"Fragen Sie die Beamtin an Schalter acht!",sec:"B"},
+{en:"to mean / to signify",de:"bedeuten",ex:"Was bedeutet das Wort?",sec:"B"},
+{en:"to begin / to start",de:"beginnen",ex:"Das Spiel beginnt um 15.30 Uhr.",sec:"B"},
+{en:"near / with / at (place/time)",de:"bei",ex:"Offenbach liegt bei Frankfurt.",sec:"B"},
+{en:"both",de:"beide",ex:"Beide Eltern arbeiten.",sec:"B"},
+{en:"the leg",de:"das Bein",ex:"Mein rechtes Bein tut weh.",sec:"B"},
+{en:"the example",de:"das Beispiel",ex:"Kannst du mir ein Beispiel sagen?",sec:"B"},
+{en:"for example",de:"zum Beispiel / z.B.",ex:"Viele meiner Verwandten, z. B. meine beiden Br\u00fcder...",sec:"B"},
+{en:"well-known / famous",de:"bekannt",ex:"Picasso ist sehr bekannt.",sec:"B"},
+{en:"the acquaintance",de:"der/die Bekannte",ex:"Ein Bekannter von mir hei\u00dft Klaus.",sec:"B"},
+{en:"to receive / to get",de:"bekommen",ex:"Haben Sie meinen Brief bekommen?",sec:"B"},
+{en:"to use",de:"benutzen",ex:"Die Aufz\u00fcge bitte nicht benutzen!",sec:"B"},
+{en:"the profession / job",de:"der Beruf",ex:"Was sind Sie von Beruf?",sec:"B"},
+{en:"occupied / busy / taken",de:"besetzt",ex:"Die Nummer ist immer besetzt.",sec:"B"},
+{en:"to visit (a sight)",de:"besichtigen",ex:"Ich m\u00f6chte gern den Dom besichtigen.",sec:"B"},
+{en:"better",de:"besser",ex:"Es geht mir schon besser.",sec:"B"},
+{en:"best",de:"best-",ex:"Am besten treffen wir uns morgen.",sec:"B"},
+{en:"to order",de:"bestellen",ex:"Wir m\u00f6chten bestellen, bitte.",sec:"B"},
+{en:"to visit (a person)",de:"besuchen",ex:"Darf ich dich besuchen?",sec:"B"},
+{en:"the bed",de:"das Bett",ex:"Wir brauchen noch ein Kinderbett.",sec:"B"},
+{en:"to pay",de:"bezahlen",ex:"Wo muss ich bezahlen?",sec:"B"},
+{en:"the beer",de:"das Bier",ex:"Noch ein Bier bitte.",sec:"B"},
+{en:"the picture / image",de:"das Bild",ex:"Hast du ein Bild von deinem Sohn?",sec:"B"},
+{en:"cheap / inexpensive",de:"billig",ex:"Die Jacke kostet nur 10 Euro! Die ist aber billig!",sec:"B"},
+{en:"the pear",de:"die Birne",ex:"Ein Kilo Birnen, bitte!",sec:"B"},
+{en:"until / to / as far as",de:"bis",ex:"Ich fahre nur bis Stuttgart.",sec:"B"},
+{en:"a little / a bit",de:"ein bisschen",ex:"Ich spreche ein bisschen Deutsch.",sec:"B"},
+{en:"please / you're welcome",de:"bitte",ex:"Eine Tasse Kaffee, bitte!",sec:"B"},
+{en:"the request / favour",de:"die Bitte",ex:"Ich habe noch eine Bitte.",sec:"B"},
+{en:"to ask / to request",de:"bitten",ex:"Darf ich Sie um etwas bitten?",sec:"B"},
+{en:"bitter",de:"bitter",ex:"Der Kaffee schmeckt bitter.",sec:"B"},
+{en:"to stay / to remain",de:"bleiben",ex:"Ich bleibe heute zu Hause.",sec:"B"},
+{en:"the pencil",de:"der Bleistift",ex:"Hast du einen Bleistift?",sec:"B"},
+{en:"the view",de:"der Blick",ex:"Von diesem Hotel hat man einen guten Blick auf den Rhein.",sec:"B"},
+{en:"the flower",de:"die Blume",ex:"Gefallen dir die Blumen?",sec:"B"},
+{en:"the form / sheet",de:"der Bogen",ex:"Schreiben Sie Ihre L\u00f6sungen bitte auf den Antwortbogen.",sec:"B"},
+{en:"angry / bad / evil",de:"b\u00f6se",ex:"Sie ist b\u00f6se auf mich.",sec:"B"},
+{en:"to need",de:"brauchen",ex:"Brauchst du die Zeitung noch?",sec:"B"},
+{en:"wide / broad",de:"breit",ex:"Wie breit ist der Schrank?",sec:"B"},
+{en:"the letter",de:"der Brief",ex:"Haben Sie einen Brief f\u00fcr mich?",sec:"B"},
+{en:"the stamp",de:"die Briefmarke",ex:"Kaufst du bitte Briefmarken bei der Post.",sec:"B"},
+{en:"to bring",de:"bringen",ex:"Bringen Sie mir bitte noch einen Kaffee!",sec:"B"},
+{en:"the bread",de:"das Brot",ex:"Haben Sie auch Wei\u00dfbrot?",sec:"B"},
+{en:"the bread roll",de:"das Br\u00f6tchen",ex:"M\u00f6chtest du Br\u00f6tchen zum Fr\u00fchst\u00fcck?",sec:"B"},
+{en:"the brother",de:"der Bruder",ex:"Sein Bruder arbeitet auch hier.",sec:"B"},
+{en:"the book",de:"das Buch",ex:"Gute B\u00fccher sind oft sehr teuer.",sec:"B"},
+{en:"the letter (of alphabet)",de:"der Buchstabe",ex:"Diesen Buchstaben gibt es in meiner Sprache nicht.",sec:"B"},
+{en:"to spell",de:"buchstabieren",ex:"Bitte buchstabieren Sie Ihren Namen.",sec:"B"},
+{en:"the bus",de:"der Bus",ex:"Wann kommt der n\u00e4chste Bus?",sec:"B"},
+{en:"the butter",de:"die Butter",ex:"F\u00fcr mich bitte ein Br\u00f6tchen mit Butter und K\u00e4se.",sec:"B"},
+
+// -- C --
+{en:"the cafe",de:"das Caf\u00e9",ex:"Sollen wir uns im Caf\u00e9 treffen?",sec:"C"},
+{en:"the CD",de:"die CD",ex:"Bring bitte deine Lieblings-CD mit.",sec:"C"},
+{en:"the boss / manager",de:"der Chef",ex:"Wir haben eine neue Chefin.",sec:"C"},
+{en:"approximately / about",de:"circa / ca.",ex:"Von Mainz nach Frankfurt sind es circa f\u00fcnfzig Kilometer.",sec:"C"},
+{en:"the computer",de:"der Computer",ex:"Wann bekommst du deinen neuen Computer?",sec:"C"},
+
+// -- D --
+{en:"there / here (pointing)",de:"da",ex:"Da hinten ist er ja.",sec:"D"},
+{en:"the lady",de:"die Dame",ex:"Sehr geehrte Damen und Herren!",sec:"D"},
+{en:"next to it / beside it",de:"daneben",ex:"Du kennst doch die Post. Daneben ist die Bank.",sec:"D"},
+{en:"to thank",de:"danken",ex:"Ich danke Ihnen f\u00fcr die Einladung.",sec:"D"},
+{en:"the thanks",de:"der Dank",ex:"Vielen Dank! Herzlichen Dank!",sec:"D"},
+{en:"thank you",de:"danke",ex:"Soll ich Ihnen helfen? \u2013 Nein, danke!",sec:"D"},
+{en:"then / after that",de:"dann",ex:"Ich muss noch schnell zur Post, dann komme ich.",sec:"D"},
+{en:"the date",de:"das Datum",ex:"Bitte schreiben Sie noch das Datum auf das Formular.",sec:"D"},
+{en:"to last / to take (time)",de:"dauern",ex:"Wie lange dauert der Film?",sec:"D"},
+{en:"your (informal)",de:"dein-",ex:"Ist das dein Auto?",sec:"D"},
+{en:"because / for",de:"denn",ex:"Ich kann nicht kommen, denn ich bin krank.",sec:"D"},
+{en:"the / that (articles/pronouns)",de:"der, die, das",ex:"Ich nehme das da.",sec:"D"},
+{en:"you (object, informal)",de:"dich",ex:"Die Blumen sind f\u00fcr dich.",sec:"D"},
+{en:"this / these",de:"dies-",ex:"Ich nehme lieber diesen Kuchen.",sec:"D"},
+{en:"to you / for you (dative)",de:"dir",ex:"Gefallen dir die Blumen?",sec:"D"},
+{en:"the disco / nightclub",de:"die Disco",ex:"Heute Abend gehen wir in die Disco tanzen.",sec:"D"},
+{en:"the doctor (title)",de:"der Doktor",ex:"Wir gehen zum Doktor.",sec:"D"},
+{en:"the double room",de:"das Doppelzimmer",ex:"Wollen Sie ein Doppelzimmer oder ein Einzelzimmer?",sec:"D"},
+{en:"the village",de:"das Dorf",ex:"Meine Familie lebt in einem Dorf.",sec:"D"},
+{en:"there / over there",de:"dort / dorthin",ex:"Dort ist unser Haus.",sec:"D"},
+{en:"outside",de:"drau\u00dfen",ex:"Wollen wir drau\u00dfen sitzen?",sec:"D"},
+{en:"to print",de:"drucken",ex:"Bitte drucke das Formular f\u00fcr mich.",sec:"D"},
+{en:"the printer",de:"der Drucker",ex:"Mein Drucker ist kaputt.",sec:"D"},
+{en:"to press / push",de:"dr\u00fccken",ex:"Dr\u00fcck hier, dann geht der Computer an.",sec:"D"},
+{en:"through",de:"durch",ex:"Am besten gehen Sie durch die Breite Stra\u00dfe.",sec:"D"},
+{en:"the announcement / broadcast",de:"die Durchsage",ex:"Ich habe die Durchsage nicht verstanden.",sec:"D"},
+{en:"may / to be allowed to",de:"d\u00fcrfen",ex:"Sie d\u00fcrfen hier nicht rauchen.",sec:"D"},
+{en:"the thirst",de:"der Durst",ex:"Ich habe gro\u00dfen Durst.",sec:"D"},
+{en:"to shower",de:"(sich) duschen",ex:"Ich bade nicht so gern, ich dusche lieber.",sec:"D"},
+{en:"the shower",de:"die Dusche",ex:"Unsere Wohnung hat nur eine Dusche.",sec:"D"},
+
+// -- E --
+{en:"the corner",de:"die Ecke",ex:"An der n\u00e4chsten Ecke links.",sec:"E"},
+{en:"the wife / husband",de:"die Ehefrau / der Ehemann",ex:"Das ist mein (Ehe-) Mann / meine (Ehe-) Frau.",sec:"E"},
+{en:"the egg",de:"das Ei",ex:"M\u00f6chtest du ein Ei zum Fr\u00fchst\u00fcck?",sec:"E"},
+{en:"in a hurry",de:"eilig",ex:"Hast du es eilig?",sec:"E"},
+{en:"a / one",de:"ein-",ex:"Ich nehme ein Bier. Willst du auch eins?",sec:"E"},
+{en:"simple / one-way (ticket)",de:"einfach",ex:"Die Pr\u00fcfung ist ganz einfach.",sec:"E"},
+{en:"the entrance",de:"der Eingang",ex:"Der Eingang ist um die Ecke.",sec:"E"},
+{en:"to go shopping",de:"einkaufen",ex:"Ich muss noch f\u00fcr morgen einkaufen.",sec:"E"},
+{en:"to invite",de:"einladen",ex:"Darf ich Sie zu einem Kaffee einladen?",sec:"E"},
+{en:"the invitation",de:"die Einladung",ex:"Danke f\u00fcr die Einladung!",sec:"E"},
+{en:"once / one time",de:"einmal",ex:"Diese Pr\u00fcfung mache ich nicht noch einmal.",sec:"E"},
+{en:"to board / get on (transport)",de:"einsteigen",ex:"Schnell, steig ein, der Zug f\u00e4hrt gleich.",sec:"E"},
+{en:"the admission / entry",de:"der Eintritt",ex:"Der Preis f\u00fcr den Eintritt ist 5 Euro.",sec:"E"},
+{en:"the single room",de:"das Einzelzimmer",ex:"Haben Sie noch ein Einzelzimmer?",sec:"E"},
+{en:"the parents",de:"die Eltern",ex:"Meine Eltern leben in Spanien.",sec:"E"},
+{en:"the email",de:"die E-Mail",ex:"Ich habe Ihre E-Mail nicht bekommen.",sec:"E"},
+{en:"the recipient",de:"der Empf\u00e4nger",ex:"Auf dem Brief steht dein Name, also bist du der Empf\u00e4nger.",sec:"E"},
+{en:"to recommend",de:"empfehlen",ex:"Welchen Wein k\u00f6nnen Sie mir empfehlen?",sec:"E"},
+{en:"to end",de:"enden",ex:"Die Stra\u00dfe endet hier.",sec:"E"},
+{en:"the end",de:"das Ende",ex:"Sie wohnt am Ende der Stra\u00dfe.",sec:"E"},
+{en:"to excuse / to apologise",de:"entschuldigen",ex:"Entschuldigen Sie bitte!",sec:"E"},
+{en:"excuse me / sorry",de:"die Entschuldigung",ex:"Entschuldigung! \u2013 Bitte.",sec:"E"},
+{en:"he",de:"er",ex:"Er hei\u00dft Ali.",sec:"E"},
+{en:"the result",de:"das Ergebnis",ex:"Das Ergebnis des Tests bekommen Sie in zwei Wochen.",sec:"E"},
+{en:"to explain",de:"erkl\u00e4ren",ex:"Kannst du mir das erkl\u00e4ren?",sec:"E"},
+{en:"to allow / permit",de:"erlauben",ex:"Rauchen ist hier nicht erlaubt.",sec:"E"},
+{en:"the adult",de:"der Erwachsene",ex:"Dieser Film ist nur f\u00fcr Erwachsene.",sec:"E"},
+{en:"to tell / to narrate",de:"erz\u00e4hlen",ex:"Wir m\u00fcssen euch etwas erz\u00e4hlen!",sec:"E"},
+{en:"it",de:"es",ex:"Es regnet.",sec:"E"},
+{en:"to eat",de:"essen",ex:"Was gibt es zu essen?",sec:"E"},
+{en:"the food / meal",de:"das Essen",ex:"Das Essen ist heute sehr gut.",sec:"E"},
+{en:"your (plural informal)",de:"euer",ex:"Euer Kurs beginnt heute.",sec:"E"},
+
+// -- F --
+{en:"to drive / to travel",de:"fahren",ex:"Ich fahre mit dem Auto zur Arbeit.",sec:"F"},
+{en:"the driver",de:"der Fahrer",ex:"Bitte nicht mit dem Fahrer sprechen!",sec:"F"},
+{en:"the ticket (transport)",de:"die Fahrkarte",ex:"Hast du schon eine Fahrkarte?",sec:"F"},
+{en:"the bicycle",de:"das Fahrrad",ex:"F\u00e4hrst du mit dem Fahrrad oder mit dem Auto?",sec:"F"},
+{en:"wrong / false / incorrect",de:"falsch",ex:"Das ist falsch.",sec:"F"},
+{en:"the family",de:"die Familie",ex:"Meine Familie lebt in Spanien.",sec:"F"},
+{en:"the surname / family name",de:"der Familienname",ex:"Meine Familiennamen sind Garc\u00eda Gonz\u00e1lez.",sec:"F"},
+{en:"the marital status",de:"der Familienstand",ex:"Bei 'Familienstand' musst du 'ledig' ankreuzen.",sec:"F"},
+{en:"the colour",de:"die Farbe",ex:"Die Farbe gef\u00e4llt mir gut.",sec:"F"},
+{en:"the fax",de:"das Fax",ex:"Schicken Sie uns einfach ein Fax!",sec:"F"},
+{en:"holiday / public holiday",de:"der Feiertag",ex:"Am Montag ist Feiertag.",sec:"F"},
+{en:"to celebrate",de:"feiern",ex:"Wir feiern heute meinen Geburtstag.",sec:"F"},
+{en:"to be missing / to be absent",de:"fehlen",ex:"Was fehlt Ihnen?",sec:"F"},
+{en:"the mistake / error",de:"der Fehler",ex:"Diesen Fehler mache ich immer.",sec:"F"},
+{en:"to watch TV",de:"fernsehen",ex:"Wollen wir heute Abend mal fernsehen?",sec:"F"},
+{en:"ready / finished",de:"fertig",ex:"Bist du fertig?",sec:"F"},
+{en:"the fire / a light (for cigarette)",de:"das Feuer",ex:"Haben Sie Feuer?",sec:"F"},
+{en:"the fever / temperature",de:"das Fieber",ex:"Mein Mann hat noch immer Fieber.",sec:"F"},
+{en:"the film / movie",de:"der Film",ex:"Ich m\u00f6chte gern diesen Film sehen.",sec:"F"},
+{en:"to find",de:"finden",ex:"Wir m\u00fcssen den Schl\u00fcssel finden.",sec:"F"},
+{en:"the company / firm",de:"die Firma",ex:"Er arbeitet jetzt bei einer anderen Firma.",sec:"F"},
+{en:"the fish",de:"der Fisch",ex:"Ich esse gern Fisch.",sec:"F"},
+{en:"the bottle",de:"die Flasche",ex:"Eine Flasche Bier, bitte.",sec:"F"},
+{en:"the meat",de:"das Fleisch",ex:"Fleisch mag ich nicht.",sec:"F"},
+{en:"to fly",de:"fliegen",ex:"Ich fliege nicht gern.",sec:"F"},
+{en:"to take off (plane)",de:"abfliegen",ex:"Wann fliegst du ab?",sec:"F"},
+{en:"the departure (flight)",de:"der Abflug",ex:"Der Abflug ist um 11.20 Uhr.",sec:"F"},
+{en:"the airport",de:"der Flughafen",ex:"Kannst du mich zum Flughafen bringen?",sec:"F"},
+{en:"the aeroplane",de:"das Flugzeug",ex:"Das Flugzeug aus Berlin kommt heute sp\u00e4ter an.",sec:"F"},
+{en:"the form",de:"das Formular",ex:"Sie m\u00fcssen dieses Formular ausf\u00fcllen.",sec:"F"},
+{en:"the photo",de:"das Foto",ex:"Darf ich ein Foto machen?",sec:"F"},
+{en:"to ask",de:"fragen",ex:"Er m\u00f6chte Sie etwas fragen.",sec:"F"},
+{en:"the question",de:"die Frage",ex:"Ich habe eine Frage.",sec:"F"},
+{en:"the woman / Mrs.",de:"die Frau",ex:"Guten Tag, Frau Schmitt!",sec:"F"},
+{en:"free / available",de:"frei",ex:"Ist der Platz noch frei?",sec:"F"},
+{en:"the free time / leisure",de:"die Freizeit",ex:"In meiner Freizeit spiele ich oft Fu\u00dfball.",sec:"F"},
+{en:"foreign / unfamiliar",de:"fremd",ex:"Das wei\u00df ich nicht; ich bin fremd hier.",sec:"F"},
+{en:"to look forward to / to be pleased",de:"(sich) freuen",ex:"Ich freue mich auf den Urlaub.",sec:"F"},
+{en:"the friend / boyfriend",de:"der Freund",ex:"Das ist ein Freund von mir.",sec:"F"},
+{en:"previously / in the past",de:"fr\u00fcher",ex:"Fr\u00fcher waren wir oft zusammen im Kino.",sec:"F"},
+{en:"to have breakfast",de:"fr\u00fchst\u00fccken",ex:"Am Sonntag fr\u00fchst\u00fccke ich gern im Bett.",sec:"F"},
+{en:"the breakfast",de:"das Fr\u00fchst\u00fcck",ex:"M\u00f6chtest du ein Ei zum Fr\u00fchst\u00fcck?",sec:"F"},
+{en:"the guided tour",de:"die F\u00fchrung",ex:"Die F\u00fchrung durch das Haus beginnt in 3 Minuten.",sec:"F"},
+{en:"for",de:"f\u00fcr",ex:"Das ist f\u00fcr Sie.",sec:"F"},
+{en:"the foot",de:"der Fu\u00df",ex:"Der linke Fu\u00df tut mir weh.",sec:"F"},
+{en:"football / soccer",de:"der Fu\u00dfball",ex:"Spielt ihr gerne Fu\u00dfball?",sec:"F"},
+
+// -- G --
+{en:"the garden",de:"der Garten",ex:"Wir haben leider keinen Garten.",sec:"G"},
+{en:"the guest",de:"der Gast",ex:"Am Wochenende haben wir mehrere G\u00e4ste.",sec:"G"},
+{en:"to give",de:"geben",ex:"Kannst du mir bitte deinen Kugelschreiber geben?",sec:"G"},
+{en:"born",de:"geboren",ex:"Ich bin in Zagreb geboren.",sec:"G"},
+{en:"the year of birth",de:"das Geburtsjahr",ex:"Das Geburtsjahr Ihres Sohnes, bitte?",sec:"G"},
+{en:"the place of birth",de:"der Geburtsort",ex:"Bitte schreiben Sie Ihren Geburtsort auf das Formular.",sec:"G"},
+{en:"the birthday",de:"der Geburtstag",ex:"Herzlichen Gl\u00fcckwunsch zum Geburtstag!",sec:"G"},
+{en:"to like / to please",de:"gefallen",ex:"Das gef\u00e4llt mir.",sec:"G"},
+{en:"against / around (time)",de:"gegen",ex:"Fahr nicht gegen den Baum!",sec:"G"},
+{en:"to go",de:"gehen",ex:"Wie geht's? Ich muss jetzt leider gehen.",sec:"G"},
+{en:"to belong",de:"geh\u00f6ren",ex:"Wem geh\u00f6rt das?",sec:"G"},
+{en:"the money",de:"das Geld",ex:"Hast du noch Geld?",sec:"G"},
+{en:"the vegetables",de:"das Gem\u00fcse",ex:"Gem\u00fcse brauchen wir auch noch.",sec:"G"},
+{en:"the luggage / baggage",de:"das Gep\u00e4ck",ex:"Wollen Sie Ihr Gep\u00e4ck mitnehmen?",sec:"G"},
+{en:"just now / right now",de:"gerade",ex:"Da kommt er ja gerade.",sec:"G"},
+{en:"straight ahead",de:"geradeaus",ex:"Gehen Sie immer geradeaus!",sec:"G"},
+{en:"gladly / with pleasure",de:"gern(e)",ex:"Ich gehe gerne einkaufen.",sec:"G"},
+{en:"the shop / business",de:"das Gesch\u00e4ft",ex:"Die Gesch\u00e4fte schlie\u00dfen um 18.30 Uhr.",sec:"G"},
+{en:"the gift / present",de:"das Geschenk",ex:"Danke f\u00fcr das sch\u00f6ne Geschenk.",sec:"G"},
+{en:"the siblings",de:"die Geschwister",ex:"Ich habe leider keine Geschwister.",sec:"G"},
+{en:"the conversation",de:"das Gespr\u00e4ch",ex:"Das Gespr\u00e4ch mit Frau Kunz ist um 14 Uhr.",sec:"G"},
+{en:"yesterday",de:"gestern",ex:"Gestern war ich krank.",sec:"G"},
+{en:"deceased / died",de:"gestorben",ex:"Meine Frau ist gestern gestorben.",sec:"G"},
+{en:"the drink / beverage",de:"das Getr\u00e4nk",ex:"Mein Lieblingsgetr\u00e4nk ist Tomatensaft.",sec:"G"},
+{en:"the weight",de:"das Gewicht",ex:"Bei 'Gewicht' schreibst du: 62 Kilo.",sec:"G"},
+{en:"to win",de:"gewinnen",ex:"Wer gewinnt das Spiel?",sec:"G"},
+{en:"the glass",de:"das Glas",ex:"Bitte noch ein Glas Wein!",sec:"G"},
+{en:"to believe",de:"glauben",ex:"Ich glaube, er kommt gleich.",sec:"G"},
+{en:"same / right away",de:"gleich",ex:"Ich komme gleich.",sec:"G"},
+{en:"the track / platform",de:"das Gleis",ex:"Der ICE nach Berlin h\u00e4lt heute an Gleis 12.",sec:"G"},
+{en:"the luck / happiness",de:"das Gl\u00fcck",ex:"Viel Gl\u00fcck!",sec:"G"},
+{en:"happy",de:"gl\u00fccklich",ex:"Meine Kinder sind gl\u00fccklich verheiratet.",sec:"G"},
+{en:"the congratulations",de:"der Gl\u00fcckwunsch",ex:"Herzlichen Gl\u00fcckwunsch zum Geburtstag.",sec:"G"},
+{en:"degree (Celsius)",de:"Grad",ex:"Heute haben wir drei\u00dfig Grad.",sec:"G"},
+{en:"to congratulate",de:"gratulieren",ex:"Ich gratuliere dir!",sec:"G"},
+{en:"to grill / barbecue",de:"grillen",ex:"Heute grillen wir im Garten.",sec:"G"},
+{en:"big / tall",de:"gro\u00df",ex:"Frankfurt ist eine gro\u00dfe Stadt.",sec:"G"},
+{en:"the size",de:"die Gr\u00f6\u00dfe",ex:"Haben Sie das auch in Gr\u00f6\u00dfe 40?",sec:"G"},
+{en:"the grandparents",de:"die Gro\u00dfeltern",ex:"Meine Gro\u00dfeltern leben in Japan.",sec:"G"},
+{en:"the grandmother",de:"die Gro\u00dfmutter",ex:"Meine Gro\u00dfmutter hei\u00dft Eva.",sec:"G"},
+{en:"the grandfather",de:"der Gro\u00dfvater",ex:"Mein Gro\u00dfvater ist schon 80.",sec:"G"},
+{en:"the group",de:"die Gruppe",ex:"Die erste Gruppe beginnt um 16 Uhr.",sec:"G"},
+{en:"the greeting",de:"der Gru\u00df",ex:"Viele Gr\u00fc\u00dfe an Ihre Frau.",sec:"G"},
+{en:"valid",de:"g\u00fcltig",ex:"Der Pass ist nicht mehr g\u00fcltig.",sec:"G"},
+{en:"affordable / cheap",de:"g\u00fcnstig",ex:"Dort gibt es g\u00fcnstige Angebote.",sec:"G"},
+{en:"good",de:"gut",ex:"Das finde ich gut. Guten Morgen!",sec:"G"},
+
+// -- H --
+{en:"the hair",de:"das Haar",ex:"Sie hat lange Haare.",sec:"H"},
+{en:"to have",de:"haben",ex:"Ich habe ein neues Auto.",sec:"H"},
+{en:"the chicken",de:"das H\u00e4hnchen",ex:"Ein H\u00e4hnchen mit Pommes bitte!",sec:"H"},
+{en:"the half board",de:"die Halbpension",ex:"M\u00f6chten Sie Vollpension oder Halbpension?",sec:"H"},
+{en:"the hall",de:"die Halle",ex:"Wir treffen uns in Halle B.",sec:"H"},
+{en:"hello",de:"hallo",ex:"Hallo Inge! Wie geht's?",sec:"H"},
+{en:"to stop / to hold",de:"halten",ex:"Dieser Zug h\u00e4lt nicht in R\u00fcdesheim.",sec:"H"},
+{en:"the (bus/tram) stop",de:"die Haltestelle",ex:"An der n\u00e4chsten Haltestelle m\u00fcssen Sie aussteigen.",sec:"H"},
+{en:"the hand",de:"die Hand",ex:"Er gibt mir die Hand.",sec:"H"},
+{en:"the mobile phone",de:"das Handy",ex:"In der Schule bitte die Handys ausmachen!",sec:"H"},
+{en:"the house",de:"das Haus",ex:"In welchem Haus wohnst du?",sec:"H"},
+{en:"the homework",de:"die Hausaufgabe",ex:"Kannst du mir bei den Hausaufgaben helfen?",sec:"H"},
+{en:"the housewife / househusband",de:"die Hausfrau / der Hausmann",ex:"Die Hausfrau/der Hausmann w\u00e4scht, kocht und kauft ein.",sec:"H"},
+{en:"the homeland",de:"die Heimat",ex:"Ich komme aus der Schweiz. Das ist meine Heimat.",sec:"H"},
+{en:"to marry",de:"heiraten",ex:"Meine Schwester heiratet einen Japaner.",sec:"H"},
+{en:"to be called",de:"hei\u00dfen",ex:"Ich hei\u00dfe Charlotte Meier.",sec:"H"},
+{en:"to help",de:"helfen",ex:"K\u00f6nnen Sie mir helfen, bitte?",sec:"H"},
+{en:"bright / light",de:"hell",ex:"Im Sommer ist es bis 21 Uhr hell.",sec:"H"},
+{en:"the stove / cooker",de:"der Herd",ex:"In der neuen K\u00fcche fehlt noch der Herd.",sec:"H"},
+{en:"the gentleman / Mr.",de:"der Herr",ex:"Guten Tag, Herr Sommer!",sec:"H"},
+{en:"hearty / warm (greeting)",de:"herzlich",ex:"Herzlichen Gl\u00fcckwunsch!",sec:"H"},
+{en:"today",de:"heute",ex:"Heute ist ein sch\u00f6ner Tag.",sec:"H"},
+{en:"here",de:"hier",ex:"Hier wohne ich.",sec:"H"},
+{en:"the help",de:"die Hilfe",ex:"Brauchen Sie meine Hilfe?",sec:"H"},
+{en:"at the back / behind",de:"hinten",ex:"Die T\u00fcr zum Aussteigen ist hinten.",sec:"H"},
+{en:"the hobby",de:"das Hobby",ex:"Meine Hobbys sind Wandern und Schwimmen.",sec:"H"},
+{en:"high / tall",de:"hoch",ex:"Der Mount Everest ist 8.880 Meter hoch.",sec:"H"},
+{en:"the wedding",de:"die Hochzeit",ex:"Zu dieser Hochzeit kommen mehr als f\u00fcnfzig G\u00e4ste.",sec:"H"},
+{en:"to fetch / to get",de:"holen",ex:"Ich hole zwei Flaschen Wasser aus der K\u00fcche.",sec:"H"},
+{en:"to hear / to listen",de:"h\u00f6ren",ex:"H\u00f6r mal! Was ist das?",sec:"H"},
+{en:"the hotel",de:"das Hotel",ex:"Im Urlaub sind wir in einem Hotel am Meer.",sec:"H"},
+{en:"the dog",de:"der Hund",ex:"Der Hund ist noch jung.",sec:"H"},
+{en:"the hunger",de:"der Hunger",ex:"Ich habe Hunger! Wann ist das Essen fertig?",sec:"H"},
+
+// -- I --
+{en:"I",de:"ich",ex:"Ich hei\u00dfe Veronika.",sec:"I"},
+{en:"her / him (dative/accusative)",de:"ihr / ihm / ihn",ex:"Gib ihr/ihm bitte das Buch. Ruf ihn bitte an.",sec:"I"},
+{en:"always",de:"immer",ex:"Frau Bast kommt immer zu sp\u00e4t.",sec:"I"},
+{en:"in",de:"in",ex:"Ich wohne in Wiesbaden.",sec:"I"},
+{en:"the information",de:"die Information",ex:"Gehen Sie zur Information.",sec:"I"},
+{en:"international",de:"international",ex:"Unser Deutschkurs ist international.",sec:"I"},
+{en:"the internet",de:"das Internet",ex:"Das findest du im Internet.",sec:"I"},
+
+// -- J --
+{en:"yes",de:"ja",ex:"Sind Sie Herr Watanabe? \u2013 Ja.",sec:"J"},
+{en:"the jacket",de:"die Jacke",ex:"Zieh dir eine Jacke an. Es ist kalt.",sec:"J"},
+{en:"every / each",de:"jed-",ex:"Blumen kannst du in jedem Bahnhof kaufen.",sec:"J"},
+{en:"now",de:"jetzt",ex:"Jetzt machen wir eine Pause.",sec:"J"},
+{en:"the job",de:"der Job",ex:"Jenny hat einen neuen Job bei der Post.",sec:"J"},
+{en:"the young person / teenager",de:"der Jugendliche",ex:"Viele Jugendliche kaufen gern ein.",sec:"J"},
+{en:"young",de:"jung",ex:"Claudia ist 21. \u2013 Was? Noch so jung?",sec:"J"},
+{en:"the boy",de:"der Junge",ex:"Ich habe zwei Kinder. Einen Jungen und ein M\u00e4dchen.",sec:"J"},
+
+// -- K --
+{en:"the coffee",de:"der Kaffee",ex:"Zum Fr\u00fchst\u00fcck trinke ich immer Kaffee.",sec:"K"},
+{en:"broken",de:"kaputt",ex:"Das Glas geht sehr leicht kaputt.",sec:"K"},
+{en:"the card / ticket / map / menu",de:"die Karte",ex:"Ich schreibe eine Karte aus dem Urlaub.",sec:"K"},
+{en:"the (credit) card",de:"die (Kredit-)Karte",ex:"Kann ich auch mit Karte bezahlen?",sec:"K"},
+{en:"the potato",de:"die Kartoffel",ex:"F\u00fcr Pommes frites braucht man Kartoffeln.",sec:"K"},
+{en:"the cash register / till",de:"die Kasse",ex:"Zahlen Sie bitte an der Kasse.",sec:"K"},
+{en:"to buy",de:"kaufen",ex:"Tim kauft sich ein neues Auto.",sec:"K"},
+{en:"no / none",de:"kein",ex:"Es gibt keine Eintrittskarten mehr.",sec:"K"},
+{en:"to know (a person/thing)",de:"kennen",ex:"Kennen Sie diese Frau? \u2013 Nein, leider nicht.",sec:"K"},
+{en:"to get to know",de:"kennenlernen",ex:"Wir sind neu hier. Wir m\u00f6chten Sie kennenlernen.",sec:"K"},
+{en:"the child",de:"das Kind",ex:"Wie viele Kinder haben Sie?",sec:"K"},
+{en:"the kindergarten",de:"der Kindergarten",ex:"Die kleine Laura geht schon in den Kindergarten.",sec:"K"},
+{en:"the cinema",de:"das Kino",ex:"Wir sehen heute Abend im Kino einen sch\u00f6nen Film.",sec:"K"},
+{en:"the kiosk",de:"der Kiosk",ex:"Am Kiosk bekommen Sie Getr\u00e4nke und Zeitungen.",sec:"K"},
+{en:"clear / of course",de:"klar",ex:"Kommst du mit? \u2013 Klar!",sec:"K"},
+{en:"the class",de:"die Klasse",ex:"In unserer Klasse sind f\u00fcnfundzwanzig Sch\u00fcler.",sec:"K"},
+{en:"the clothing",de:"die Kleidung",ex:"Wo finde ich Kleidung?",sec:"K"},
+{en:"small / little",de:"klein",ex:"Eltville ist eine kleine Stadt am Rhein.",sec:"K"},
+{en:"to cook",de:"kochen",ex:"Herr Georgi kann gut kochen.",sec:"K"},
+{en:"the suitcase",de:"der Koffer",ex:"Ist das Ihr Koffer?",sec:"K"},
+{en:"the colleague",de:"der Kollege",ex:"Wie hei\u00dft die neue Kollegin?",sec:"K"},
+{en:"to come",de:"kommen",ex:"Woher kommen Sie? \u2013 Aus Frankreich.",sec:"K"},
+{en:"can / to be able to",de:"k\u00f6nnen",ex:"Ich kann Deutsch und Russisch.",sec:"K"},
+{en:"the (bank) account",de:"das Konto",ex:"Das Geld \u00fcberweisen wir auf Ihr Konto.",sec:"K"},
+{en:"the head",de:"der Kopf",ex:"Mein Kopf tut weh!",sec:"K"},
+{en:"to cost",de:"kosten",ex:"Wie viel kostet das? \u2013 10 Euro.",sec:"K"},
+{en:"sick / ill",de:"krank",ex:"Ich bin krank und liege im Bett.",sec:"K"},
+{en:"to get (informal)",de:"kriegen",ex:"Ich kriege 15 Euro in der Stunde.",sec:"K"},
+{en:"the kitchen",de:"die K\u00fcche",ex:"Der neue Herd kommt in die K\u00fcche.",sec:"K"},
+{en:"the cake",de:"der Kuchen",ex:"Ich nehme ein St\u00fcck Kuchen.",sec:"K"},
+{en:"the ballpoint pen",de:"der Kugelschreiber",ex:"Hast du einen Kugelschreiber f\u00fcr mich?",sec:"K"},
+{en:"the fridge / refrigerator",de:"der K\u00fchlschrank",ex:"Haben wir noch Milch? \u2013 Ja, im K\u00fchlschrank.",sec:"K"},
+{en:"cultural",de:"kulturell",ex:"Ich bin kulturell interessiert. Ich gehe oft ins Museum.",sec:"K"},
+{en:"to take care of",de:"sich k\u00fcmmern",ex:"Jede Mutter k\u00fcmmert sich um ihre kleinen Kinder.",sec:"K"},
+{en:"the customer",de:"der Kunde",ex:"Einen Moment, bitte. Ich habe eine Kundin.",sec:"K"},
+{en:"the course",de:"der Kurs",ex:"Der Deutschkurs geht bis zum Sommer.",sec:"K"},
+{en:"short",de:"kurz",ex:"Ricardo hat kurzes Haar.",sec:"K"},
+
+// -- L --
+{en:"to laugh",de:"lachen",ex:"Die Kinder lachen viel.",sec:"L"},
+{en:"the shop / store",de:"der Laden",ex:"Im Buchladen k\u00f6nnen Sie B\u00fccher kaufen.",sec:"L"},
+{en:"the country / land",de:"das Land",ex:"Italien ist ein sch\u00f6nes Land.",sec:"L"},
+{en:"long",de:"lang",ex:"Die Jeans ist zu lang.",sec:"L"},
+{en:"for a long time (how long?)",de:"lange",ex:"Wie lange f\u00e4hrt der Zug von Hamburg nach Berlin?",sec:"L"},
+{en:"slow",de:"langsam",ex:"K\u00f6nnten Sie bitte etwas langsamer sprechen?",sec:"L"},
+{en:"to run / to walk",de:"laufen",ex:"Ich m\u00f6chte nicht Auto fahren, ich m\u00f6chte laufen.",sec:"L"},
+{en:"loud",de:"laut",ex:"Nicht so laut! Das Baby schl\u00e4ft.",sec:"L"},
+{en:"to live",de:"leben",ex:"Sie lebt bei ihrer Schwester.",sec:"L"},
+{en:"the life",de:"das Leben",ex:"Das Leben in diesem Land ist teuer.",sec:"L"},
+{en:"the groceries / food",de:"die Lebensmittel",ex:"Lebensmittel bekommen Sie im Supermarkt.",sec:"L"},
+{en:"single / unmarried",de:"ledig",ex:"Sind Sie verheiratet? \u2013 Nein. Ledig.",sec:"L"},
+{en:"to lay / to put",de:"legen",ex:"Legen Sie das Buch auf den Tisch.",sec:"L"},
+{en:"the teacher",de:"der Lehrer",ex:"Unsere Deutschlehrerin hei\u00dft Frau M\u00fcller.",sec:"L"},
+{en:"light (weight) / easy",de:"leicht",ex:"Der Koffer ist leicht. Deutsch ist nicht leicht.",sec:"L"},
+{en:"unfortunately",de:"leider",ex:"Leider kann ich nicht kommen.",sec:"L"},
+{en:"quiet / soft",de:"leise",ex:"Seid leise. Die anderen schlafen schon.",sec:"L"},
+{en:"to learn",de:"lernen",ex:"Wie lange lernen Sie schon Deutsch?",sec:"L"},
+{en:"to read",de:"lesen",ex:"Ich lese ein Buch von Garc\u00eda M\u00e1rquez.",sec:"L"},
+{en:"last",de:"letzt-",ex:"Morgen ist der letzte Kurstag.",sec:"L"},
+{en:"the people",de:"die Leute",ex:"In der Disko sind viele Leute.",sec:"L"},
+{en:"the light",de:"das Licht",ex:"Wo macht man hier das Licht an?",sec:"L"},
+{en:"dear",de:"lieb-",ex:"Liebe Susanne, lieber Hans.",sec:"L"},
+{en:"to love",de:"lieben",ex:"Ich liebe dich!",sec:"L"},
+{en:"rather / preferably",de:"lieber",ex:"Sie f\u00e4hrt lieber mit der Bahn.",sec:"L"},
+{en:"favourite (prefix)",de:"Lieblings-",ex:"Mein Lieblingsfilm ist 'Schwarze Augen'.",sec:"L"},
+{en:"the song",de:"das Lied",ex:"Welches ist dein Lieblingslied?",sec:"L"},
+{en:"to lie (position)",de:"liegen",ex:"Frankfurt liegt am Main.",sec:"L"},
+{en:"left",de:"links",ex:"Gehen Sie die n\u00e4chste Stra\u00dfe links.",sec:"L"},
+{en:"the truck / lorry",de:"der Lkw",ex:"Dieser Lastkraftwagen ist sehr gro\u00df.",sec:"L"},
+{en:"the restaurant / pub",de:"das Lokal",ex:"In unserer Stra\u00dfe gibt es ein neues Lokal.",sec:"L"},
+{en:"the solution",de:"die L\u00f6sung",ex:"Die L\u00f6sung ist ganz einfach.",sec:"L"},
+{en:"funny",de:"lustig",ex:"Frau Mertens ist lustig. Sie lacht immer.",sec:"L"},
+
+// -- M --
+{en:"to do / to make",de:"machen",ex:"Was machst du heute Abend?",sec:"M"},
+{en:"the girl",de:"das M\u00e4dchen",ex:"Junge oder M\u00e4dchen?",sec:"M"},
+{en:"one (impersonal pronoun)",de:"man",ex:"Hier darf man nicht rauchen.",sec:"M"},
+{en:"the man / husband",de:"der Mann",ex:"Mein Mann arbeitet bei der Polizei.",sec:"M"},
+{en:"male",de:"m\u00e4nnlich",ex:"Kreuzen Sie bitte an: 'weiblich' oder 'm\u00e4nnlich'.",sec:"M"},
+{en:"the machine",de:"die Maschine",ex:"Die Waschmaschine ist g\u00fcnstig.",sec:"M"},
+{en:"the sea",de:"das Meer",ex:"Wir machen Urlaub am Meer.",sec:"M"},
+{en:"more",de:"mehr",ex:"Dieses Auto kostet 1.000 Euro mehr als das andere.",sec:"M"},
+{en:"my",de:"mein",ex:"Mein Vater ist Arzt.",sec:"M"},
+{en:"most",de:"meist-",ex:"Die meisten Norddeutschen sind sehr gro\u00df.",sec:"M"},
+{en:"the person / human",de:"der Mensch",ex:"Die Menschen sind hier anders als bei uns.",sec:"M"},
+{en:"to rent",de:"mieten",ex:"Ich m\u00f6chte ein Auto mieten.",sec:"M"},
+{en:"the rent",de:"die Miete",ex:"Die Miete f\u00fcr diese Wohnung ist 600 Euro.",sec:"M"},
+{en:"the milk",de:"die Milch",ex:"Die Milch steht im K\u00fchlschrank.",sec:"M"},
+{en:"with",de:"mit",ex:"Trinken Sie den Kaffee mit Milch?",sec:"M"},
+{en:"to bring along",de:"mitbringen",ex:"Soll ich dir was mitbringen?",sec:"M"},
+{en:"to come along",de:"mitkommen",ex:"Ich gehe ins Kino. Kommst du mit?",sec:"M"},
+{en:"to participate / join in",de:"mitmachen",ex:"Warum macht ihr nicht mit?",sec:"M"},
+{en:"to take along",de:"mitnehmen",ex:"Nehmen wir meine Schwester ins Kino mit?",sec:"M"},
+{en:"the middle / centre",de:"die Mitte",ex:"Der Lehrer steht in der Mitte des Klassenzimmers.",sec:"M"},
+{en:"the furniture",de:"die M\u00f6bel",ex:"Sind die M\u00f6bel neu?",sec:"M"},
+{en:"would like",de:"m\u00f6chten",ex:"Was m\u00f6chten Sie trinken?",sec:"M"},
+{en:"to like",de:"m\u00f6gen",ex:"Magst du Kaffee oder Tee?",sec:"M"},
+{en:"possible",de:"m\u00f6glich",ex:"Mit dieser Fahrkarte ist die Fahrt ab 9 Uhr m\u00f6glich.",sec:"M"},
+{en:"the moment",de:"der Moment",ex:"Einen Moment bitte.",sec:"M"},
+{en:"tomorrow",de:"morgen",ex:"Morgen beginnt die Schule um 10 Uhr.",sec:"M"},
+{en:"tired",de:"m\u00fcde",ex:"Ich bin m\u00fcde. Ich gehe schlafen.",sec:"M"},
+{en:"the mouth",de:"der Mund",ex:"\u00d6ffnen Sie den Mund.",sec:"M"},
+{en:"must / have to",de:"m\u00fcssen",ex:"Ich muss jeden Tag von 8 bis 18 Uhr arbeiten.",sec:"M"},
+{en:"the mother",de:"die Mutter",ex:"Frau Bergh\u00e4user ist die Mutter von Michaela.",sec:"M"},
+
+// -- N --
+{en:"after / to (direction)",de:"nach",ex:"Ich gehe jetzt nach Hause.",sec:"N"},
+{en:"next",de:"n\u00e4chst-",ex:"Sehen wir uns n\u00e4chste Woche?",sec:"N"},
+{en:"the name",de:"der Name",ex:"Mein Name ist Thomas Schmidt.",sec:"N"},
+{en:"to take",de:"nehmen",ex:"Ich nehme den Bus.",sec:"N"},
+{en:"no",de:"nein",ex:"Nein, ich habe keine Zeit.",sec:"N"},
+{en:"new",de:"neu",ex:"Wir haben eine neue Wohnung.",sec:"N"},
+{en:"not",de:"nicht",ex:"Das stimmt nicht.",sec:"N"},
+{en:"nothing",de:"nichts",ex:"Das macht nichts.",sec:"N"},
+{en:"never",de:"nie",ex:"Er kommt nie p\u00fcnktlich.",sec:"N"},
+{en:"still / yet",de:"noch",ex:"Ich habe noch 20 Euro.",sec:"N"},
+{en:"normal",de:"normal",ex:"75 kg. Sein Gewicht ist normal.",sec:"N"},
+{en:"the number",de:"die Nummer",ex:"Sie haben Zimmer Nummer zw\u00f6lf.",sec:"N"},
+{en:"only",de:"nur",ex:"Ich m\u00f6chte nur ein Glas Wasser.",sec:"N"},
+
+// -- O --
+{en:"above / upstairs",de:"oben",ex:"Ich wohne oben.",sec:"O"},
+{en:"the fruit",de:"das Obst",ex:"Im Sommer ist das Obst billig.",sec:"O"},
+{en:"or",de:"oder",ex:"Wann k\u00f6nnen Sie kommen \u2013 heute oder morgen?",sec:"O"},
+{en:"to open",de:"\u00f6ffnen",ex:"Ich \u00f6ffne die T\u00fcr.",sec:"O"},
+{en:"open (adj.)",de:"ge\u00f6ffnet",ex:"Der Laden ist samstags bis 16.00 Uhr ge\u00f6ffnet.",sec:"O"},
+{en:"often",de:"oft",ex:"Petra treffe ich oft.",sec:"O"},
+{en:"without",de:"ohne",ex:"Ohne Geld kann er nichts kaufen.",sec:"O"},
+{en:"the oil",de:"das \u00d6l",ex:"Den Salat machen wir ohne \u00d6l.",sec:"O"},
+{en:"the grandma",de:"die Oma",ex:"Meine Oma ist schon tot.",sec:"O"},
+{en:"the grandpa",de:"der Opa",ex:"Mein Opa hei\u00dft Hans.",sec:"O"},
+{en:"the order / tidiness",de:"die Ordnung",ex:"Das ist in Ordnung.",sec:"O"},
+{en:"the place / town",de:"der Ort",ex:"Der Ort liegt am Meer.",sec:"O"},
+
+// -- P --
+{en:"the paper",de:"das Papier",ex:"Hier sind Papier und Bleistift.",sec:"P"},
+{en:"the documents / papers",de:"die Papiere",ex:"Haben Sie Ihre Papiere dabei?",sec:"P"},
+{en:"the partner",de:"der Partner / die Partnerin",ex:"Sie ist meine Partnerin.",sec:"P"},
+{en:"the party",de:"die Party",ex:"Heute Abend machen wir eine Party.",sec:"P"},
+{en:"the passport",de:"der Pass",ex:"Im Hotel brauchst du deinen Pass.",sec:"P"},
+{en:"the break / pause",de:"die Pause",ex:"Von 12.00 bis 12.30 Uhr haben wir Mittagspause.",sec:"P"},
+{en:"the plan / map",de:"der Plan",ex:"Ich kaufe mir einen Stadtplan.",sec:"P"},
+{en:"the place / seat / square",de:"der Platz",ex:"Tut mir leid, der Platz ist besetzt.",sec:"P"},
+{en:"the police",de:"die Polizei",ex:"Holen Sie die Polizei!",sec:"P"},
+{en:"the French fries / chips",de:"die Pommes frites",ex:"Die Kinder essen H\u00e4hnchen mit Pommes frites.",sec:"P"},
+{en:"the post / post office",de:"die Post",ex:"Wo ist die Post, bitte?",sec:"P"},
+{en:"the postcode / zip code",de:"die Postleitzahl",ex:"Wie ist Ihre Postleitzahl?",sec:"P"},
+{en:"the internship",de:"das Praktikum",ex:"Ich mache ein Praktikum bei Siemens.",sec:"P"},
+{en:"the practice / doctor's office",de:"die Praxis",ex:"Die Praxis ist ab acht Uhr ge\u00f6ffnet.",sec:"P"},
+{en:"the price",de:"der Preis",ex:"Die Preise sind hoch.",sec:"P"},
+{en:"the problem",de:"das Problem",ex:"Mein Problem ist die Sprache.",sec:"P"},
+{en:"the brochure / leaflet",de:"der Prospekt",ex:"Bitte schicken Sie mir einen Prospekt von Ihrem Hotel.",sec:"P"},
+{en:"the exam / test",de:"die Pr\u00fcfung",ex:"Die Pr\u00fcfung ist am Montag um 8.00 Uhr.",sec:"P"},
+{en:"punctual / on time",de:"p\u00fcnktlich",ex:"Der Bus f\u00e4hrt p\u00fcnktlich um acht Uhr.",sec:"P"},
+
+// -- R --
+{en:"to cycle",de:"Rad fahren",ex:"Das Kind kann schon Rad fahren.",sec:"R"},
+{en:"to smoke",de:"rauchen",ex:"Ich rauche nicht.",sec:"R"},
+{en:"the room / space",de:"der Raum",ex:"Der Unterricht ist in Raum 332.",sec:"R"},
+{en:"the bill / invoice",de:"die Rechnung",ex:"Die Rechnung, bitte.",sec:"R"},
+{en:"right (direction)",de:"rechts",ex:"Die Schillerstra\u00dfe ist hier rechts.",sec:"R"},
+{en:"to rain",de:"regnen",ex:"Heute regnet es.",sec:"R"},
+{en:"the rain",de:"der Regen",ex:"Bei diesem Regen gehe ich nicht raus.",sec:"R"},
+{en:"the rice",de:"der Reis",ex:"Ich esse gern Reis.",sec:"R"},
+{en:"to travel",de:"reisen",ex:"Ich reise gern.",sec:"R"},
+{en:"the journey / trip",de:"die Reise",ex:"Wir machen eine Reise nach \u00d6sterreich.",sec:"R"},
+{en:"the travel agency",de:"das Reiseb\u00fcro",ex:"Mein Mann arbeitet im Reiseb\u00fcro.",sec:"R"},
+{en:"the travel guide",de:"der Reisef\u00fchrer",ex:"Ich kaufe mir einen Reisef\u00fchrer von Berlin.",sec:"R"},
+{en:"to repair",de:"reparieren",ex:"Er hat das Fahrrad repariert.",sec:"R"},
+{en:"the repair",de:"die Reparatur",ex:"Die Reparatur ist sehr teuer.",sec:"R"},
+{en:"the restaurant",de:"das Restaurant",ex:"Wir essen heute in einem Restaurant.",sec:"R"},
+{en:"the reception (hotel)",de:"die Rezeption",ex:"Fragen Sie bitte im Hotel an der Rezeption.",sec:"R"},
+{en:"right / correct",de:"richtig",ex:"Das ist richtig.",sec:"R"},
+{en:"to smell",de:"riechen",ex:"Dieser Wein riecht gut.",sec:"R"},
+{en:"quiet / calm",de:"ruhig",ex:"Ich m\u00f6chte ein ruhiges Zimmer.",sec:"R"},
+
+// -- S --
+{en:"the juice",de:"der Saft",ex:"M\u00f6chtest du einen Apfelsaft?",sec:"S"},
+{en:"to say",de:"sagen",ex:"Sag mal, wie geht es dir denn?",sec:"S"},
+{en:"the salad",de:"der Salat",ex:"Wie schmeckt dir der Salat?",sec:"S"},
+{en:"the salt",de:"das Salz",ex:"Herr Ober, kann ich bitte Salz haben?",sec:"S"},
+{en:"the sentence",de:"der Satz",ex:"Dieser Satz ist sehr einfach.",sec:"S"},
+{en:"the commuter train",de:"die S-Bahn",ex:"Ich nehme lieber die S-Bahn.",sec:"S"},
+{en:"the counter / switch",de:"der Schalter",ex:"Gehen Sie bitte zum Schalter drei!",sec:"S"},
+{en:"to shine / to seem",de:"scheinen",ex:"Die Sonne scheint.",sec:"S"},
+{en:"to send",de:"schicken",ex:"Bitte schicken Sie mir eine E-Mail.",sec:"S"},
+{en:"the sign",de:"das Schild",ex:"Haben Sie nicht das Schild gesehen?",sec:"S"},
+{en:"the ham",de:"der Schinken",ex:"Ich m\u00f6chte gern ein Schinkenbrot.",sec:"S"},
+{en:"to sleep",de:"schlafen",ex:"Ich schlafe meistens acht Stunden.",sec:"S"},
+{en:"bad",de:"schlecht",ex:"Mir ist schlecht! Wir haben schlechtes Wetter.",sec:"S"},
+{en:"to close",de:"schlie\u00dfen",ex:"Bitte, schlie\u00dfen Sie die T\u00fcr.",sec:"S"},
+{en:"closed",de:"geschlossen",ex:"Die Bank hat am Samstag geschlossen.",sec:"S"},
+{en:"the end / conclusion",de:"der Schluss",ex:"Ich muss jetzt Schluss machen.",sec:"S"},
+{en:"the key",de:"der Schl\u00fcssel",ex:"Ich gebe Ihnen noch den Zimmerschl\u00fcssel.",sec:"S"},
+{en:"to taste",de:"schmecken",ex:"Schmeckt das gut?",sec:"S"},
+{en:"fast / quick",de:"schnell",ex:"Er f\u00e4hrt schnell.",sec:"S"},
+{en:"already",de:"schon",ex:"Ist das Essen schon fertig?",sec:"S"},
+{en:"beautiful / nice",de:"sch\u00f6n",ex:"Das ist sehr sch\u00f6n. Sch\u00f6nen Urlaub!",sec:"S"},
+{en:"the cupboard / wardrobe",de:"der Schrank",ex:"Die Gl\u00e4ser stehen im Schrank.",sec:"S"},
+{en:"to write",de:"schreiben",ex:"Er schreibt jeden Tag f\u00fcnfzig E-Mails.",sec:"S"},
+{en:"the shoe",de:"der Schuh",ex:"Zieh die Schuhe aus!",sec:"S"},
+{en:"the school",de:"die Schule",ex:"Meine Tochter geht schon in die Schule.",sec:"S"},
+{en:"the pupil / student",de:"der Sch\u00fcler",ex:"In meinem Kurs sind acht Sch\u00fclerinnen und f\u00fcnf Sch\u00fcler.",sec:"S"},
+{en:"heavy / difficult",de:"schwer",ex:"Das ist eine schwere Arbeit.",sec:"S"},
+{en:"the sister",de:"die Schwester",ex:"Meine Schwester kommt am Dienstag.",sec:"S"},
+{en:"to swim",de:"schwimmen",ex:"Ich schwimme jeden Tag einen Kilometer.",sec:"S"},
+{en:"the swimming pool",de:"das Schwimmbad",ex:"Kommst du mit ins Schwimmbad?",sec:"S"},
+{en:"the lake",de:"der See",ex:"Komm, wir fahren zum Starnberger See.",sec:"S"},
+{en:"to see",de:"sehen",ex:"Ich kann dich nicht sehen.",sec:"S"},
+{en:"the sight / attraction",de:"die Sehensw\u00fcrdigkeit",ex:"Welche Sehensw\u00fcrdigkeiten gibt es in Frankfurt?",sec:"S"},
+{en:"very",de:"sehr",ex:"Das ist sehr schwer. Danke sehr!",sec:"S"},
+{en:"to be",de:"sein",ex:"Herr M\u00fcller ist in seinem Zimmer.",sec:"S"},
+{en:"to be gone / away",de:"weg sein",ex:"Herr Meier ist schon weg.",sec:"S"},
+{en:"to be closed",de:"zu sein",ex:"Die T\u00fcr ist zu.",sec:"S"},
+{en:"since",de:"seit",ex:"Ich wohne seit drei Jahren in K\u00f6ln.",sec:"S"},
+{en:"self-employed",de:"selbstst\u00e4ndig",ex:"Er ist selbstst\u00e4ndig.",sec:"S"},
+{en:"oneself (reflexive)",de:"sich",ex:"Sie m\u00fcssen sich erst anmelden.",sec:"S"},
+{en:"she / they",de:"sie",ex:"Wie hei\u00dft sie?",sec:"S"},
+{en:"you (formal)",de:"Sie",ex:"Wie hei\u00dfen Sie, bitte?",sec:"S"},
+{en:"to sit",de:"sitzen",ex:"Wo sitzen Sie?",sec:"S"},
+{en:"so / like this",de:"so",ex:"Sie m\u00fcssen das so machen!",sec:"S"},
+{en:"the sofa",de:"das Sofa",ex:"Das Sofa ist neu.",sec:"S"},
+{en:"immediately / right away",de:"sofort",ex:"Bitte antworten Sie sofort.",sec:"S"},
+{en:"the son",de:"der Sohn",ex:"Das ist Hans, mein Sohn.",sec:"S"},
+{en:"should / shall",de:"sollen",ex:"Soll ich kommen? Was soll ich mitbringen?",sec:"S"},
+{en:"the sun",de:"die Sonne",ex:"Die Sonne scheint.",sec:"S"},
+{en:"late",de:"sp\u00e4t",ex:"Es ist schon sp\u00e4t, ich muss gehen.",sec:"S"},
+{en:"later",de:"sp\u00e4ter",ex:"Das k\u00f6nnen wir sp\u00e4ter machen.",sec:"S"},
+{en:"the menu",de:"die Speisekarte",ex:"Bringen Sie mir die Speisekarte, bitte.",sec:"S"},
+{en:"to play",de:"spielen",ex:"Die Kinder spielen drau\u00dfen.",sec:"S"},
+{en:"the sport",de:"der Sport",ex:"Ich mache viel Sport.",sec:"S"},
+{en:"the language",de:"die Sprache",ex:"Welche Sprachen sprichst du?",sec:"S"},
+{en:"to speak",de:"sprechen",ex:"Kann ich Herrn Klein sprechen?",sec:"S"},
+{en:"the city / town",de:"die Stadt",ex:"Heidelberg ist eine alte Stadt.",sec:"S"},
+{en:"to stand",de:"stehen",ex:"Der Bus steht schon an der Haltestelle.",sec:"S"},
+{en:"the position / job",de:"die Stelle",ex:"Ich habe eine neue Stelle.",sec:"S"},
+{en:"to put / to place",de:"stellen",ex:"Stell die Tasche rechts in die Ecke!",sec:"S"},
+{en:"the floor / storey",de:"der Stock",ex:"Unsere Wohnung liegt im ersten Stock.",sec:"S"},
+{en:"the street / road",de:"die Stra\u00dfe",ex:"In welcher Stra\u00dfe wohnen Sie?",sec:"S"},
+{en:"the tram",de:"die Stra\u00dfenbahn",ex:"Wo f\u00e4hrt die Stra\u00dfenbahn ab?",sec:"S"},
+{en:"to study (at university)",de:"studieren",ex:"Ich studiere in Mainz.",sec:"S"},
+{en:"the studies (university)",de:"das Studium",ex:"Das Studium beginnt im Oktober.",sec:"S"},
+{en:"the (university) student",de:"der Student",ex:"Ich bin Studentin.",sec:"S"},
+{en:"to search / to look for",de:"suchen",ex:"Suchst du etwas?",sec:"S"},
+
+// -- T --
+{en:"to dance",de:"tanzen",ex:"Tanzen Sie gern?",sec:"T"},
+{en:"the bag / pocket",de:"die Tasche",ex:"Ich habe die Schl\u00fcssel in der Tasche.",sec:"T"},
+{en:"the taxi",de:"das Taxi",ex:"Er f\u00e4hrt mit dem Taxi.",sec:"T"},
+{en:"the tea",de:"der Tee",ex:"Ich trinke morgens immer Tee.",sec:"T"},
+{en:"the part",de:"der Teil",ex:"Lies bitte auch den zweiten Teil.",sec:"T"},
+{en:"to telephone",de:"telefonieren",ex:"Darf ich mal telefonieren?",sec:"T"},
+{en:"the telephone",de:"das Telefon",ex:"Haben Sie Telefon?",sec:"T"},
+{en:"the appointment",de:"der Termin",ex:"Am besten machen wir sofort einen Termin.",sec:"T"},
+{en:"the test",de:"der Test",ex:"Der Test war einfach.",sec:"T"},
+{en:"expensive",de:"teuer",ex:"Das ist mir zu teuer.",sec:"T"},
+{en:"the text",de:"der Text",ex:"Lesen Sie bitte diesen Text.",sec:"T"},
+{en:"the topic / theme",de:"das Thema",ex:"Wir sprechen heute \u00fcber das Thema 'Essen und Trinken'.",sec:"T"},
+{en:"the ticket",de:"das Ticket",ex:"Wie viel kostet das Ticket?",sec:"T"},
+{en:"the table",de:"der Tisch",ex:"Die Fotos liegen auf dem Tisch.",sec:"T"},
+{en:"the daughter",de:"die Tochter",ex:"Das ist meine Tochter Katharina.",sec:"T"},
+{en:"the toilet",de:"die Toilette",ex:"Wo ist die Toilette, bitte?",sec:"T"},
+{en:"the tomato",de:"die Tomate",ex:"Die Tomate ist noch gr\u00fcn.",sec:"T"},
+{en:"dead",de:"tot",ex:"Sein Vater ist schon lange tot.",sec:"T"},
+{en:"to meet",de:"(sich) treffen",ex:"Wir treffen uns immer freitags.",sec:"T"},
+{en:"the stairs",de:"die Treppe",ex:"Die Toilette? Die Treppe hoch und dann links.",sec:"T"},
+{en:"to drink",de:"trinken",ex:"M\u00f6chtest du etwas trinken?",sec:"T"},
+{en:"bye / goodbye (informal)",de:"tsch\u00fcss",ex:"Junge Leute sagen meistens 'tsch\u00fcss!'",sec:"T"},
+{en:"to do",de:"tun",ex:"Ich habe noch etwas zu tun.",sec:"T"},
+
+// -- U --
+{en:"over / about / above",de:"\u00fcber",ex:"Gehen Sie hier \u00fcber die Stra\u00dfe.",sec:"U"},
+{en:"to stay overnight",de:"\u00fcbernachten",ex:"Du kannst bei mir \u00fcbernachten.",sec:"U"},
+{en:"to transfer (money)",de:"\u00fcberweisen",ex:"Sie k\u00f6nnen das Geld auch \u00fcberweisen.",sec:"U"},
+{en:"the clock / watch / time",de:"die Uhr",ex:"Es ist vier Uhr.",sec:"U"},
+{en:"at (time) / around",de:"um",ex:"Er kommt um sieben Uhr.",sec:"U"},
+{en:"to move (house)",de:"umziehen",ex:"N\u00e4chsten Monat ziehen wir um.",sec:"U"},
+{en:"and",de:"und",ex:"Peter und Helmut sind meine S\u00f6hne.",sec:"U"},
+{en:"our",de:"unser-",ex:"Das ist unsere Lehrerin.",sec:"U"},
+{en:"below / downstairs",de:"unten",ex:"Er wohnt ganz unten im Haus.",sec:"U"},
+{en:"under / below / among",de:"unter",ex:"Unter uns wohnt eine Familie mit drei Kindern.",sec:"U"},
+{en:"the lesson / class",de:"der Unterricht",ex:"Wir haben Unterricht von 8.00 bis 12.00 Uhr.",sec:"U"},
+{en:"to sign",de:"unterschreiben",ex:"Wo muss ich unterschreiben?",sec:"U"},
+{en:"the signature",de:"die Unterschrift",ex:"Hier fehlt noch Ihre Unterschrift.",sec:"U"},
+{en:"the holiday / vacation",de:"der Urlaub",ex:"Ich nehme im September Urlaub.",sec:"U"},
+
+// -- V --
+{en:"the father",de:"der Vater",ex:"Mein Vater ist Arbeiter.",sec:"V"},
+{en:"forbidden / prohibited",de:"verboten",ex:"Hier ist Rauchen verboten.",sec:"V"},
+{en:"to earn",de:"verdienen",ex:"Ich verdiene 1.500 Euro im Monat.",sec:"V"},
+{en:"the club / association",de:"der Verein",ex:"Es gibt einen neuen Sportverein in der Stadt.",sec:"V"},
+{en:"married",de:"verheiratet",ex:"Ich bin verheiratet und habe drei Kinder.",sec:"V"},
+{en:"to sell",de:"verkaufen",ex:"Er verkauft sein altes Auto.",sec:"V"},
+{en:"the salesperson",de:"der Verk\u00e4ufer",ex:"Meine Mutter ist Verk\u00e4uferin im Kaufhaus.",sec:"V"},
+{en:"to rent out",de:"vermieten",ex:"Die Wohnung ist schon vermietet.",sec:"V"},
+{en:"the landlord",de:"der Vermieter",ex:"Unser Vermieter hei\u00dft Huber.",sec:"V"},
+{en:"to understand",de:"verstehen",ex:"K\u00f6nnen Sie mich verstehen?",sec:"V"},
+{en:"the relative",de:"der Verwandte",ex:"Peter besucht seine Verwandten in Polen.",sec:"V"},
+{en:"much / a lot",de:"viel",ex:"Hier regnet es viel.",sec:"V"},
+{en:"maybe / perhaps",de:"vielleicht",ex:"Ich komme vielleicht mit dem Bus.",sec:"V"},
+{en:"from / of / by",de:"von",ex:"Das Auto von Felix ist kaputt.",sec:"V"},
+{en:"before / in front of / ago",de:"vor",ex:"Das Auto steht vor der T\u00fcr.",sec:"V"},
+{en:"the first name",de:"der Vorname",ex:"Mein Vorname ist Eva.",sec:"V"},
+{en:"caution / be careful",de:"die Vorsicht",ex:"Vorsicht! Da kommt ein Auto.",sec:"V"},
+{en:"to introduce (oneself)",de:"(sich) vorstellen",ex:"K\u00f6nnen Sie sich bitte vorstellen?",sec:"V"},
+{en:"the area code",de:"die Vorwahl",ex:"Wie ist die Vorwahl von M\u00fcnchen?",sec:"V"},
+
+// -- W --
+{en:"to hike",de:"wandern",ex:"Wir wandern um den Chiemsee.",sec:"W"},
+{en:"when",de:"wann",ex:"Wann bist du fertig?",sec:"W"},
+{en:"to wait",de:"warten",ex:"K\u00f6nnen Sie ein paar Minuten warten?",sec:"W"},
+{en:"why",de:"warum",ex:"Warum kommt er nicht?",sec:"W"},
+{en:"what",de:"was",ex:"Was ist das? Was m\u00f6chten Sie?",sec:"W"},
+{en:"what kind of",de:"was f\u00fcr ein",ex:"Was f\u00fcr eine Farbe m\u00f6chten Sie?",sec:"W"},
+{en:"to wash",de:"(sich) waschen",ex:"Wo kann ich mir die H\u00e4nde waschen?",sec:"W"},
+{en:"the water",de:"das Wasser",ex:"Ein Glas Wasser, bitte.",sec:"W"},
+{en:"to hurt",de:"weh tun",ex:"Mein Bein tut weh.",sec:"W"},
+{en:"female",de:"weiblich",ex:"Kreuzen Sie bitte an: 'weiblich' oder 'm\u00e4nnlich'.",sec:"W"},
+{en:"the wine",de:"der Wein",ex:"Nein danke, ich m\u00f6chte keinen Wein.",sec:"W"},
+{en:"far",de:"weit",ex:"Zum Bahnhof ist es nicht weit.",sec:"W"},
+{en:"further / onward",de:"weiter",ex:"Der Bus f\u00e4hrt nicht weiter.",sec:"W"},
+{en:"which",de:"welch-",ex:"Welches Buch m\u00f6chtest du?",sec:"W"},
+{en:"the world",de:"die Welt",ex:"Es gibt viele Probleme auf der Welt.",sec:"W"},
+{en:"little / few",de:"wenig",ex:"Ich habe leider nur wenig verstanden.",sec:"W"},
+{en:"who",de:"wer",ex:"Wer ist das?",sec:"W"},
+{en:"to become",de:"werden",ex:"Mein Sohn will Arzt werden.",sec:"W"},
+{en:"the weather",de:"das Wetter",ex:"Wir hatten schlechtes Wetter.",sec:"W"},
+{en:"important",de:"wichtig",ex:"Dieses Formular ist sehr wichtig.",sec:"W"},
+{en:"how",de:"wie",ex:"Wie hei\u00dft du?",sec:"W"},
+{en:"to repeat",de:"wiederholen",ex:"K\u00f6nnen Sie das bitte wiederholen?",sec:"W"},
+{en:"goodbye (on phone)",de:"Auf Wiederh\u00f6ren",ex:"Also auf Wiederh\u00f6ren!",sec:"W"},
+{en:"goodbye",de:"Auf Wiedersehen",ex:"Auf Wiedersehen!",sec:"W"},
+{en:"how much / how many",de:"wie viel",ex:"Wie viel Milch nehmen Sie?",sec:"W"},
+{en:"welcome",de:"willkommen",ex:"Herzlich willkommen!",sec:"W"},
+{en:"the wind",de:"der Wind",ex:"Der Wind kommt aus Osten.",sec:"W"},
+{en:"we",de:"wir",ex:"Wir lernen Deutsch.",sec:"W"},
+{en:"to know (a fact)",de:"wissen",ex:"Wei\u00dft du, wie er hei\u00dft?",sec:"W"},
+{en:"where",de:"wo",ex:"Wo waren Sie im Urlaub?",sec:"W"},
+{en:"where from",de:"woher",ex:"Woher kommen Sie?",sec:"W"},
+{en:"where to",de:"wohin",ex:"Wohin f\u00e4hrt dieser Bus?",sec:"W"},
+{en:"to live / to reside",de:"wohnen",ex:"Ich wohne in M\u00fcnchen.",sec:"W"},
+{en:"the apartment / flat",de:"die Wohnung",ex:"Seit wann haben Sie diese Wohnung?",sec:"W"},
+{en:"to want",de:"wollen",ex:"Wollen Sie einen Kaffee trinken?",sec:"W"},
+{en:"the word",de:"das Wort",ex:"Ich kenne das Wort nicht.",sec:"W"},
+{en:"wonderful",de:"wunderbar",ex:"Das Essen schmeckt wunderbar.",sec:"W"},
+
+// -- Z --
+{en:"to pay",de:"zahlen",ex:"Zahlen, bitte!",sec:"Z"},
+{en:"the time",de:"die Zeit",ex:"Ich habe heute keine Zeit.",sec:"Z"},
+{en:"currently / at the moment",de:"zurzeit",ex:"Zurzeit habe ich sehr viel zu tun.",sec:"Z"},
+{en:"the newspaper",de:"die Zeitung",ex:"Ich lese gern Zeitung.",sec:"Z"},
+{en:"the cigarette",de:"die Zigarette",ex:"Wie teuer sind die Zigaretten?",sec:"Z"},
+{en:"the room",de:"das Zimmer",ex:"Das Zimmer ist gro\u00df.",sec:"Z"},
+{en:"the customs",de:"der Zoll",ex:"Wir m\u00fcssen noch durch den Zoll.",sec:"Z"},
+{en:"to / too / closed",de:"zu",ex:"Der Bus f\u00e4hrt zum Bahnhof. Ich bin zu Hause.",sec:"Z"},
+{en:"satisfied / content",de:"zufrieden",ex:"Ich bin mit der Wohnung zufrieden.",sec:"Z"},
+{en:"the train",de:"der Zug",ex:"Ich fahre gern mit dem Zug.",sec:"Z"},
+{en:"back / return",de:"zur\u00fcck",ex:"Wann kommst du zur\u00fcck?",sec:"Z"},
+{en:"together",de:"zusammen",ex:"Sollen wir zusammen essen gehen?",sec:"Z"},
+{en:"between",de:"zwischen",ex:"Heidelberg liegt zwischen Frankfurt und Stuttgart.",sec:"Z"}
+];
+
+/* -- State -- */
+var deck = allCards.slice();
+var idx = 0, know = 0, learning = 0, flipped = false;
+var learningList = loadLearning();
+var filterOpen = false;
+var activeSections = {};
+var reviewing = false;
+
+/* -- localStorage helpers -- */
+function saveLearning() {
+  try {
+    var keys = learningList.map(function(c) { return c.de; });
+    localStorage.setItem('sd1_learning', JSON.stringify(keys));
+  } catch(e) {}
+}
+function loadLearning() {
+  try {
+    var raw = localStorage.getItem('sd1_learning');
+    if (!raw) return [];
+    var keys = JSON.parse(raw);
+    var result = [];
+    for (var i = 0; i < keys.length; i++) {
+      for (var j = 0; j < allCards.length; j++) {
+        if (allCards[j].de === keys[i]) { result.push(allCards[j]); break; }
+      }
+    }
+    return result;
+  } catch(e) { return []; }
+}
+function updateReviewBar() {
+  var bar = document.getElementById('reviewBar');
+  var countEl = document.getElementById('reviewCount');
+  var backBtn = document.getElementById('backFullBtn');
+  if (learningList.length > 0 || reviewing) {
+    bar.classList.add('visible');
+    countEl.textContent = learningList.length;
+  } else {
+    bar.classList.remove('visible');
+  }
+  if (backBtn) backBtn.style.display = reviewing ? 'inline-block' : 'none';
+}
+function clearLearning() {
+  learningList = [];
+  saveLearning();
+  updateReviewBar();
+}
+
+/* -- Sections -- */
+var allSections = [];
+(function(){
+  var seen = {};
+  for (var i = 0; i < allCards.length; i++) {
+    if (!seen[allCards[i].sec]) { seen[allCards[i].sec] = true; allSections.push(allCards[i].sec); }
+  }
+})();
+
+function countActive() {
+  var n = 0; for (var k in activeSections) { if (activeSections[k]) n++; } return n;
+}
+
+function buildSectionPicker() {
+  var el = document.getElementById('sectionPicker');
+  el.innerHTML = '';
+  var nActive = countActive();
+  var allTag = document.createElement('span');
+  allTag.className = 'section-tag' + (nActive === 0 ? ' active' : '');
+  allTag.textContent = 'All (' + allCards.length + ')';
+  allTag.onclick = function() { activeSections = {}; applyFilter(); };
+  el.appendChild(allTag);
+  for (var i = 0; i < allSections.length; i++) {
+    (function(s) {
+      var count = 0;
+      for (var j = 0; j < allCards.length; j++) { if (allCards[j].sec === s) count++; }
+      var tag = document.createElement('span');
+      tag.className = 'section-tag' + (activeSections[s] ? ' active' : '');
+      tag.textContent = s + ' (' + count + ')';
+      tag.onclick = function() {
+        if (activeSections[s]) delete activeSections[s]; else activeSections[s] = true;
+        applyFilter();
+      };
+      el.appendChild(tag);
+    })(allSections[i]);
+  }
+}
+
+function toggleFilter() {
+  filterOpen = !filterOpen;
+  var picker = document.getElementById('sectionPicker');
+  var btn = document.querySelector('.filter-btn');
+  if (filterOpen) { picker.classList.add('visible'); btn.classList.add('active'); }
+  else { picker.classList.remove('visible'); btn.classList.remove('active'); }
+}
+
+function applyFilter() {
+  var nActive = countActive();
+  if (nActive === 0) { deck = allCards.slice(); }
+  else {
+    deck = [];
+    for (var i = 0; i < allCards.length; i++) {
+      if (activeSections[allCards[i].sec]) deck.push(allCards[i]);
+    }
+  }
+  idx = 0; know = 0; learning = 0; flipped = false;
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'block';
+  document.getElementById('controls').style.display = 'flex';
+  document.getElementById('subtitle').textContent = 'German Flashcards A\u2013Z  \u00b7  ' + deck.length + ' cards';
+  buildSectionPicker();
+  updateCard();
+}
+
+function shuffle() {
+  for (var i = deck.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+  }
+  idx = 0; know = 0; learning = 0; flipped = false;
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'block';
+  document.getElementById('controls').style.display = 'flex';
+  updateCard();
+}
+
+function updateCard() {
+  var ci = document.getElementById('cardInner');
+  // Disable transition so the reset to front is instant (no reverse-flip flash)
+  ci.style.transition = 'none';
+  ci.classList.remove('flipped');
+  flipped = false;
+  document.getElementById('controls').classList.remove('visible');
+  var card = deck[idx];
+  document.getElementById('frontWord').textContent = card.en;
+  document.getElementById('backWord').textContent = card.de;
+  document.getElementById('backExample').textContent = card.ex;
+  document.getElementById('counter').textContent = 'Card ' + (idx + 1) + ' of ' + deck.length;
+  document.getElementById('progress').style.width = ((idx / deck.length) * 100) + '%';
+  document.getElementById('knowCount').textContent = know + ' know';
+  document.getElementById('learnCount').textContent = learning + ' learning';
+  // Force layout reflow, then re-enable transition for the next flip
+  void ci.offsetHeight;
+  ci.style.transition = '';
+}
+
+function flipCard() {
+  if (!flipped) {
+    document.getElementById('cardInner').classList.add('flipped');
+    flipped = true;
+    document.getElementById('controls').classList.add('visible');
+  }
+}
+
+function mark(correct) {
+  if (correct) {
+    know++;
+    if (reviewing) {
+      learningList = learningList.filter(function(c) { return c.de !== deck[idx].de; });
+      saveLearning();
+      updateReviewBar();
+    }
+  } else {
+    learning++;
+    // avoid duplicates in learningList
+    var dominated = false;
+    for (var i = 0; i < learningList.length; i++) {
+      if (learningList[i].de === deck[idx].de) { dominated = true; break; }
+    }
+    if (!dominated) learningList.push(deck[idx]);
+    saveLearning();
+    updateReviewBar();
+  }
+  idx++;
+  if (idx >= deck.length) showSummary();
+  else updateCard();
+}
+
+function showSummary() {
+  document.getElementById('cardArea').style.display = 'none';
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('progress').style.width = '100%';
+  document.getElementById('counter').textContent = 'Done! ' + deck.length + ' cards';
+  document.getElementById('summary').style.display = 'block';
+  document.getElementById('summaryText').textContent =
+    'You knew ' + know + ' out of ' + deck.length + ' cards. Still learning: ' + learning + '.';
+  var reviewBtn = document.getElementById('reviewBtn');
+  if (learningList.length > 0) {
+    reviewBtn.style.display = 'inline-block';
+    reviewBtn.textContent = 'Review ' + learningList.length + ' learning cards';
+  } else {
+    reviewBtn.style.display = 'none';
+  }
+  updateReviewBar();
+}
+
+function reviewLearning() {
+  if (learningList.length === 0) return;
+  deck = learningList.slice();
+  idx = 0; know = 0; learning = 0; flipped = false;
+  reviewing = true;
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'block';
+  document.getElementById('controls').style.display = 'flex';
+  document.getElementById('subtitle').textContent = 'Reviewing \u2013 ' + deck.length + ' cards to learn';
+  document.getElementById('counter').textContent = 'Card 1 of ' + deck.length;
+  updateReviewBar();
+  updateCard();
+}
+
+function restart() {
+  idx = 0; know = 0; learning = 0; flipped = false;
+  reviewing = false;
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('cardArea').style.display = 'block';
+  document.getElementById('controls').style.display = 'flex';
+  updateReviewBar();
+  updateCard();
+}
+
+function backToFullDeck() {
+  reviewing = false;
+  applyFilter();
+}
+
+/* -- Keyboard shortcuts -- */
+document.addEventListener('keydown', function(e) {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (flipped && (e.key === 'ArrowLeft' || e.key === '1')) mark(false);
+  if (flipped && (e.key === 'ArrowRight' || e.key === '2')) mark(true);
+});
+
+/* -- Init -- */
+document.getElementById('subtitle').textContent = 'German Flashcards A\u2013Z  \u00b7  ' + allCards.length + ' cards';
+buildSectionPicker();
+updateReviewBar();
+updateCard();
+</script>
+</body>
+</html>
