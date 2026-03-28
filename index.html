@@ -59,6 +59,7 @@
   .review-bar-btn.primary:hover { background: #a83a24; }
   .clear-btn { padding: 5px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #888; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   .clear-btn:hover { background: #f0efeb; }
+  .badge-viewed { background: #e8e8e8; color: #666; }
 </style>
 </head>
 <body>
@@ -71,6 +72,8 @@
   <div class="top-controls">
     <button class="filter-btn" onclick="toggleFilter()">Filter</button>
     <button class="shuffle-btn" onclick="shuffle()">Shuffle</button>
+    <button class="filter-btn" id="hideViewedBtn" onclick="toggleHideViewed()">Hide Viewed</button>
+    <button class="clear-btn" id="clearViewedBtn" onclick="clearViewed()" style="display:none">Clear Viewed</button>
   </div>
 </div>
 
@@ -101,6 +104,7 @@
 
 <div class="meta">
   <span><span class="badge badge-know" id="knowCount">0 know</span></span>
+  <span><span class="badge badge-viewed" id="viewedCount">0 viewed</span></span>
   <span><span class="badge badge-learn" id="learnCount">0 learning</span></span>
 </div>
 
@@ -922,6 +926,8 @@ var learningList = loadLearning();
 var filterOpen = false;
 var activeSections = {};
 var reviewing = false;
+var viewedSet = loadViewed();
+var hideViewed = false;
 
 /* -- localStorage helpers -- */
 function saveLearning() {
@@ -960,6 +966,45 @@ function clearLearning() {
   learningList = [];
   saveLearning();
   updateReviewBar();
+}
+
+/* -- Viewed helpers -- */
+function saveViewed() {
+  try {
+    var keys = [];
+    for (var k in viewedSet) { if (viewedSet[k]) keys.push(k); }
+    localStorage.setItem('sd1_viewed', JSON.stringify(keys));
+  } catch(e) {}
+}
+function loadViewed() {
+  try {
+    var raw = localStorage.getItem('sd1_viewed');
+    if (!raw) return {};
+    var keys = JSON.parse(raw);
+    var result = {};
+    for (var i = 0; i < keys.length; i++) { result[keys[i]] = true; }
+    return result;
+  } catch(e) { return {}; }
+}
+function updateViewedBadge() {
+  var count = 0;
+  for (var k in viewedSet) { if (viewedSet[k]) count++; }
+  document.getElementById('viewedCount').textContent = count + ' viewed';
+  var clearBtn = document.getElementById('clearViewedBtn');
+  if (clearBtn) clearBtn.style.display = (hideViewed || count > 0) ? '' : 'none';
+}
+function toggleHideViewed() {
+  hideViewed = !hideViewed;
+  var btn = document.getElementById('hideViewedBtn');
+  if (hideViewed) { btn.classList.add('active'); } else { btn.classList.remove('active'); }
+  updateViewedBadge();
+  applyFilter();
+}
+function clearViewed() {
+  viewedSet = {};
+  saveViewed();
+  updateViewedBadge();
+  if (hideViewed) applyFilter();
 }
 
 /* -- Sections -- */
@@ -1008,25 +1053,52 @@ function toggleFilter() {
   else { picker.classList.remove('visible'); btn.classList.remove('active'); }
 }
 
-function applyFilter() {
+function buildSectionDeck() {
   var nActive = countActive();
-  if (nActive === 0) { deck = allCards.slice(); }
-  else {
-    deck = [];
-    for (var i = 0; i < allCards.length; i++) {
-      if (activeSections[allCards[i].sec]) deck.push(allCards[i]);
+  if (nActive === 0) { return allCards.slice(); }
+  var result = [];
+  for (var i = 0; i < allCards.length; i++) {
+    if (activeSections[allCards[i].sec]) result.push(allCards[i]);
+  }
+  return result;
+}
+
+function applyFilter() {
+  var sectionDeck = buildSectionDeck();
+  if (hideViewed) {
+    var filtered = [];
+    for (var fi = 0; fi < sectionDeck.length; fi++) {
+      if (!viewedSet[sectionDeck[fi].de]) filtered.push(sectionDeck[fi]);
     }
+    if (filtered.length === 0) {
+      deck = sectionDeck;
+      document.getElementById('subtitle').textContent = 'All cards have been viewed! Clear Viewed to see them again.';
+    } else {
+      deck = filtered;
+      document.getElementById('subtitle').textContent = 'German Flashcards A\u2013Z  \u00b7  ' + deck.length + ' cards';
+    }
+  } else {
+    deck = sectionDeck;
+    document.getElementById('subtitle').textContent = 'German Flashcards A\u2013Z  \u00b7  ' + deck.length + ' cards';
   }
   idx = 0; know = 0; learning = 0; flipped = false;
   document.getElementById('summary').style.display = 'none';
   document.getElementById('cardArea').style.display = 'block';
   document.getElementById('controls').style.display = 'flex';
-  document.getElementById('subtitle').textContent = 'German Flashcards A\u2013Z  \u00b7  ' + deck.length + ' cards';
   buildSectionPicker();
   updateCard();
 }
 
 function shuffle() {
+  var base = buildSectionDeck();
+  if (hideViewed) {
+    var filtered = [];
+    for (var fi = 0; fi < base.length; fi++) {
+      if (!viewedSet[base[fi].de]) filtered.push(base[fi]);
+    }
+    if (filtered.length > 0) base = filtered;
+  }
+  deck = base;
   for (var i = deck.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
@@ -1063,6 +1135,9 @@ function flipCard() {
     document.getElementById('cardInner').classList.add('flipped');
     flipped = true;
     document.getElementById('controls').classList.add('visible');
+    viewedSet[deck[idx].de] = true;
+    saveViewed();
+    updateViewedBadge();
   }
 }
 
@@ -1148,6 +1223,7 @@ document.addEventListener('keydown', function(e) {
 document.getElementById('subtitle').textContent = 'German Flashcards A\u2013Z  \u00b7  ' + allCards.length + ' cards';
 buildSectionPicker();
 updateReviewBar();
+updateViewedBadge();
 updateCard();
 </script>
 </body>
